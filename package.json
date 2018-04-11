@@ -1,0 +1,36 @@
+{
+  "name": "acx",
+  "version": "0.1.1",
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "form-data": "^2.3.2",
+    "request": "^2.85.0",
+    "request-promise": "^4.2.2",
+    "ws": "^5.0.0"
+  },
+  "description": "ACX Rest API & WebSocket Nodejs Package",
+  "main": "acx-api.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/it-blockchainglobal/acx-api.git"
+  },
+  "keywords": [
+    "ACX",
+    "API",
+    "REST",
+    "WebSocket"
+  ],
+  "author": {
+    "name": "Sean Fang",
+    "email": "sean.fang@blockchainglobal.com",
+    "url": "https://www.blockchainglobal.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/it-blockchainglobal/acx-api/issues"
+  },
+  "homepage": "https://github.com/it-blockchainglobal/acx-api#readme"
+}

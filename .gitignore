@@ -2,6 +2,6 @@
 logs
 *.log
 npm-debug.log*
-
+iExample.js
 # Dependency directories
 node_modules

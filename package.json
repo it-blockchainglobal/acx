@@ -1,5 +1,5 @@
 {
-  "name": "@it.blockchainglobal/acx",
+  "name": "@blockchain-global/acx",
   "version": "0.1.1",
   "dependencies": {
     "crypto-js": "^3.1.9-1",

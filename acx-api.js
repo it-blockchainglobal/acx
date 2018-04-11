@@ -159,8 +159,7 @@ class ACX {
                 //console.log("New orders placed");
                 res.resume();
             }
-        })
-
+        });
     }
     placeOrder(order, callback) {
         if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
@@ -213,7 +212,6 @@ class ACX {
                 });
             }
         });
-
     }
     updateOrderById(id, side, price, volume, callback) {
         if (!id) throw Error('updateOrderById: Invalid Order ID');

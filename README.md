@@ -23,7 +23,6 @@ var acx = new ACX("dashbtc", <access_key>, <secret_key>);
 
 #### Get my account information
 ```javascript
-// Get your profile and accounts info.
 acx.getMyAccount((data)=>{
     console.log(data);
 })

@@ -10,9 +10,7 @@ npm install acx --save
 
 ### Prerequisites
 To get started, you need to request for access/secret key at first.
-```
-Please visit [ACX Exchange](https://help.acx.io/api) for more information.
-```
+Please visit [ACX API Reference](https://help.acx.io/api) for more information.
 
 ## Usage
 
@@ -51,7 +49,7 @@ acx.getOrders((data)=>{
 #### Get my orders by price
 Get my resent open orders by side(buy/sell) and price
 ```javascript
-// 
+
 acx.getOrdersByPrice('buy', '0.046446', (data)=>{
     console.log(data);
 })
@@ -59,8 +57,8 @@ acx.getOrdersByPrice('buy', '0.046446', (data)=>{
 ```
 ## Authors
 
-* **Sean Fang** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Sean Fang** - *Initial work*
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License

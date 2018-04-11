@@ -1,3 +1,8 @@
+[![GitHub last commit](https://img.shields.io/github/last-commit/it-blockchainglobal/acx-api.svg?maxAge=2400)](#)
+[![npm](https://img.shields.io/npm/dt/acx.svg)](https://www.npmjs.com/package/acx)
+[![npm](https://img.shields.io/npm/v/acx.svg)](https://www.npmjs.com/package/acx)
+[![npm](https://img.shields.io/npm/l/acx.svg)](https://www.npmjs.com/package/acx)
+
 # ACX API & WebSocket Utilities 
 This project is designed to help you make your own projects that interact with the [ACX Exchange](https://help.acx.io/api).
 

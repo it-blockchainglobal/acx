@@ -67,9 +67,16 @@ class ACX {
     getOrders(callback) {
         var tonce = (new Date).getTime();
         var uri = '/api/v2/orders.json';
-        this.get(uri, { 'market': this.market, 'tonce': tonce, 'order_by': 'desc', 'signature': this.getSignature('GET', uri, { 'market': this.market, 'order_by': 'desc', 'tonce': tonce }) }, (data) => {
-            if (callback) { callback(data); }
-        }, 'getOrders');
+        this.get(
+            uri,
+            {
+                'market': this.market,
+                'tonce': tonce,
+                'order_by': 'desc',
+                'signature': this.getSignature('GET', uri, { 'market': this.market, 'order_by': 'desc', 'tonce': tonce })
+            }, (data) => {
+                if (callback) { callback(data); }
+            }, 'getOrders');
     }
     getOrdersByPrice(side, price, callback) {
         if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');

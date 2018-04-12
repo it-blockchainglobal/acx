@@ -104,8 +104,20 @@ Cancel a specific order by order id
 ```javascript
 acx.deleteOrder('536779', (data)=>{
     console.log(data);
-})
+});
 ```
+### Bulk cancel orders
+Cancel all your orders
+```javascript
+acx.clearOrders();
+```
+Alternatively, you can also cancel all your orders by side(buy/sell)
+```javascript
+acx.clearOrders('buy', (data)=>{
+    console.log(data);
+});
+```
+
 
 
 ## Authors

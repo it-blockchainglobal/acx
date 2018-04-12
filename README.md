@@ -72,6 +72,42 @@ acx.getDeposits('dash', (data)=>{
 });
 ```
 
+### Create multiple sell/buy orders
+Create multiple sell/buy orders by list of order objects. Response status message will be display.
+```javascript
+acx.placeOrders([{
+    side: 'sell',
+    price: '0.026449',
+    volume: '0.01',
+},{
+    side: 'sell',
+    price: '0.026449',
+    volume: '0.01',
+}]);
+```
+If you want to handle the response. Pass a callback function as the last argument.
+```javascript
+acx.placeOrders([{
+    side: 'sell',
+    price: '0.026449',
+    volume: '0.01',
+},{
+    side: 'buy',
+    price: '0.026449',
+    volume: '0.01',
+}], (data)=>{
+    console.log(data);
+});
+```
+### Cancel an order
+Cancel a specific order by order id
+```javascript
+acx.deleteOrder('536779', (data)=>{
+    console.log(data);
+})
+```
+
+
 ## Authors
 
 * **Sean Fang** - *Initial work*

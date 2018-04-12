@@ -28,20 +28,34 @@ var acx = new ACX("dashbtc", <access_key>, <secret_key>);
 
 #### Get my account information
 ```javascript
-acx.getMyAccount((data)=>{
+acx.getMyAccount().then(data => {
     console.log(data);
-})
+}).catch(e => { console.error(e); });
 ```
 
 #### Get my trade history
+Get recent 50 trades in descending order.
 ```javascript
-acx.getMyTrades((data)=>{
+acx.getMyTrades().then(data => {
     console.log(data);
-})
+}).catch(e => { console.error(e); });
+```
+
+You can also specify other parameters to narrow down results.
+```javascript
+acx.getMyTrades({from:7476198, order_by:'asc'}).then(data => {
+    console.log(data);
+}).catch(e => { console.error(e); });
+```
+
+```javascript
+acx.getMyTrades({timestamp:1522904400}).then(data => {
+    console.log(data);
+}).catch(e => { console.error(e); });
 ```
 
 #### Get my open orders
-Get my resent open orders. 
+Get my recent open orders. 
 * Paginated results is still under development.
 * Sorting function is still under development.
 ```javascript

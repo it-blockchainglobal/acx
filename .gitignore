@@ -8,3 +8,4 @@ vim.exe.stackdump
 # Dependency directories
 node_modules
 example
+.vscode/launch.json

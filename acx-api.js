@@ -10,6 +10,7 @@ const CryptoJS = require("crypto-js");
 const request = require('request-promise');
 const WebSocket = require('ws');
 const FormData = require('form-data');
+const Promise = require("bluebird");
 
 class ACX {
     constructor(market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080') {
@@ -29,6 +30,14 @@ class ACX {
             queryStr = verb;
         }
         return CryptoJS.HmacSHA256(queryStr, this.secret_key).toString(CryptoJS.enc.Hex);
+    }
+
+    getQueryParams(verb, uri, params) {
+        if (!verb) throw Error('Request Query Parameter: verb');
+        if (!uri) throw Error('Request Query Parameter: uri');
+        if (!params) throw Error('Request Query Parameter: params');
+        params.signature = this.getSignature(verb, uri, params);
+        return params;
     }
     initWebSorket(onTradeChanged, onOrderbookChanged) {
         var self = this;
@@ -50,19 +59,21 @@ class ACX {
             }
         });
     }
-    getMyAccount(callback) {
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/members/me.json';
-        this.get(uri, { 'tonce': tonce, 'signature': this.getSignature('GET', uri, { 'tonce': tonce }) }, (data) => {
-            if (callback) { callback(data.accounts); }
-        }, 'getMyAccount');
+    getMyAccount() {
+        let uri = '/api/v2/members/me.json';
+        let params = {tonce: (new Date).getTime()};
+        return new Promise((resolve, reject)=>{
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getMyAccount');
+        });
     }
-    getMyTrades(callback) {
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/trades/my.json';
-        this.get(uri, { 'market': this.market, 'tonce': tonce, 'order_by': 'desc', 'signature': this.getSignature('GET', uri, { 'market': this.market, 'order_by': 'desc', 'tonce': tonce }) }, (data) => {
-            if (callback) { callback(data); }
-        }, 'getMyTrades');
+    getMyTrades({ market = this.market, order_by='desc'?'desc':'asc', limit=50, tonce=(new Date).getTime(), from=undefined, to=undefined, timestamp=undefined}={}) {
+        let uri = '/api/v2/trades/my.json';
+        let params = {market: market, tonce: tonce};
+        Object.assign(params, arguments[0]);
+        return new Promise((resolve, reject)=>{
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getMyTrades');
+        });
+        
     }
     getOrders(callback) {
         var tonce = (new Date).getTime();

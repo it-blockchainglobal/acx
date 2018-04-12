@@ -53,12 +53,25 @@ acx.getOrders((data)=>{
 #### Get my orders by price
 Get my resent open orders by side(buy/sell) and price
 ```javascript
-
 acx.getOrdersByPrice('buy', '0.046446', (data)=>{
     console.log(data);
 })
-
 ```
+### Get my orders by order id
+Get information of specified order by order id
+```javascript
+acx.getOrderById('536747', (data)=>{
+    console.log(data);
+});
+```
+### Get my deposits history
+Get my deposits history by currency value(contains btc,aud,bch,eth,hsr,fuel,ubtc,eet,dash). 
+```javascript
+acx.getDeposits('dash', (data)=>{
+    console.log(data);
+});
+```
+
 ## Authors
 
 * **Sean Fang** - *Initial work*

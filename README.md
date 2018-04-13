@@ -24,7 +24,7 @@ Please visit [ACX API Reference](https://help.acx.io/api) for more information.
 ## Usage
 
 ### Initialise
-| parameter | type   |required?|  description                                      |
+| parameter | type   |required?|  description  |
 | --------- | ------- | ------|------------------------------------------------ |
 | `market`     | String | required  | markets available in ACX,  All available markets can be found at [ACX API Reference](https://acx.io//api/v2/markets).  |
 | `access_key`  | String | required| access key gain from ACX.io         |
@@ -73,8 +73,8 @@ acx.getMarketTrades({timestamp:1522904400}).then(data => {
 
 #### Get my trade history
 Get recent 50 trades in descending order.
-| parameter | type   |required?|  description                                      |
-| --------- | ------- | ------|------------------------------------------------ |
+| parameter | type   |required?|  description  |
+| ---------| -------| ------|-----------------------------------------------|
 | `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
 | `order_by`| String | optional | If set, returned trades will be sorted in specific order, default to 'desc'(reverse creation order). |
 | `limit` | Integer | optional | Limit the number of returned trades. Default to 50. |
@@ -134,8 +134,8 @@ acx.getOrders({ limit: 2, page: 2 }).then(data => {
 ```
 #### Update my order by order id
 
-| parameter | type   |required?|  description                                      |
-| --------- | ------- | ------|------------------------------------------------ |
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
 | `order_id`| Integer | required | Unique order id. |
 | `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
 | `side` | String | optional | Either 'sell' or 'buy'. |
@@ -155,8 +155,8 @@ acx.updateOrderById({id: 536786, price: 0.044532, volume: 0.012}).then(data => {
 
 #### Get my orders by order id
 Get information of specified order by order id
-| parameter | type   |required?|  description                                      |
-| --------- | ------- | ------|------------------------------------------------ |
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
 | `order_id`| Integer | required | Unique order id. |
 ```javascript
 acx.getOrderById(536786).then(data => {
@@ -167,8 +167,8 @@ acx.getOrderById(536786).then(data => {
 ### Get my deposits history
 Get my deposits history by currency value(contains btc, aud, bch, eth, hsr, fuel, ubtc, eet, dash). 
 
-| parameter | type   |required?|  description                                      |
-| --------- | ------- | ------|------------------------------------------------ |
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
 | `currency` | String | Optional | currency value(contains btc, aud, bch, eth, hsr, fuel, ubtc, eet, dash).  |
 | `limit` | Integer | optional | Set result limit. |
 | `state` | String | optional | Filter deposits by state.|
@@ -210,8 +210,8 @@ acx.getDepositAddress('btc').then(data => {
 ```
 #### Create multiple sell/buy orders
 Create multiple sell/buy orders by list of order objects. Response status message will be displayed.
-| parameter | type   |required?|  description                                      |
-| --------- | ------- | ------|------------------------------------------------ |
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
 | `side` | String | optional | Either 'sell' or 'buy'. |
 | `price` | Float | optional | Price for each unit.|
 | `volumn` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0', its executed volume is '3.0'.|
@@ -227,8 +227,8 @@ acx.placeOrders([
 
 #### Cancel an order
 Cancel a specific order by order id
-| parameter | type   |required?|  description                                      |
-| --------- | ------- | ------|------------------------------------------------ |
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
 | `order_id`| Integer | required | Unique order id. |
 ```javascript
 acx.deleteOrder(536791).then(data => {
@@ -237,8 +237,8 @@ acx.deleteOrder(536791).then(data => {
 ```
 #### Bulk cancel orders
 Cancel all your orders
-| parameter | type   |required?|  description                                      |
-| --------- | ------- | ------|------------------------------------------------ |
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
 | `side`| String | optional | Either 'sell' or 'buy'. |
 ```javascript
 acx.clearOrders();
@@ -308,7 +308,7 @@ acx.getDepth({limit:1000}).then(data => {
 
 #### Get OHLC(K Line) of specific market
   
-| parameter | type   |required?|  description                                      |
+| parameter | type   |required?|  description|
 | --------- | ------- | ------|------------------------------------------------ |
 | `market`    | String | optional  | Market you want to get data from, default to the one specified on initialization. |
 | `limit`    | Integer | optional  | Limit the number of returned data points. Default to 30. |

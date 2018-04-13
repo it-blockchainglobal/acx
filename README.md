@@ -134,7 +134,8 @@ acx.getOrdersByPrice('buy', '0.046446', (data)=>{
 
 ### Get my orders by order id
 
-Get information of specified order by order id
+Get information of specified order by order id.
+
 | parameter | type   |required?|  description |
 | ---------| -------| ------|----------------------------------------------- |
 | `order_id`| Integer | required | Unique order id. |

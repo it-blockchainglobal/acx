@@ -166,9 +166,9 @@ acx.getOrderById(536786).then(data => {
 
 ### Get my deposits history
 Get my deposits history by currency value(contains btc, aud, bch, eth, hsr, fuel, ubtc, eet, dash). 
-    getDeposits({ currency = undefined, limit = undefined, state = undefined } = {}) {
+
 | parameter | type   |required?|  description                                      |
-| --------- | ------- | ------ | ------------------------------------------------ |
+| --------- | ------- | ------|------------------------------------------------ |
 | `currency` | String | Optional | currency value(contains btc, aud, bch, eth, hsr, fuel, ubtc, eet, dash).  |
 | `limit` | Integer | optional | Set result limit. |
 | `state` | String | optional | Filter deposits by state.|
@@ -191,7 +191,7 @@ acx.getDeposits({ state: 'submitting', limit: 10 }).then(data=>{
 ```
 #### Get my deposit by txid
 | parameter | type   |required?|  description                                      |
-| --------- | ------- | ------ | ------------------------------------------------ |
+| --------- | ------- | ------|------------------------------------------------ |
 | `txid` | String | Required | transaction ID  |
 ```javascript
 acx.getDeposit('mock29c5de23a0dfc10648fb5f128ff5bd140e153a5a99d0208b9f3d755e29721137').then(data => {
@@ -200,7 +200,7 @@ acx.getDeposit('mock29c5de23a0dfc10648fb5f128ff5bd140e153a5a99d0208b9f3d755e2972
 ```
 #### Get my deposit address by currency
 | parameter | type   |required?|  description                                      |
-| --------- | ------- | ------ | ------------------------------------------------ |
+| --------- | ------- | ------|------------------------------------------------ |
 | `currency` | String | Optional | currency value(contains btc, aud, bch, eth, hsr, fuel, ubtc, eet, dash). Default to 'aud'.  |
 
 ```javascript

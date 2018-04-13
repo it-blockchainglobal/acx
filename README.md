@@ -105,8 +105,6 @@ acx.getOrders((data)=>{
     console.log(data);
 })
 ```
-<<<<<<< HEAD
-=======
 #### Update my order by order id
 
 | parameter | type   |required?|  description |
@@ -116,7 +114,6 @@ acx.getOrders((data)=>{
 | `side` | String | optional | Either 'sell' or 'buy'. |
 | `price` | Float | optional | Price for each unit.|
 | `volumn` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0', its executed volume is '3.0'.|
->>>>>>> parent of 45fecc3... readme fix parameter table format issue
 
 #### Get my orders by price
 Get my resent open orders by side(buy/sell) and price
@@ -127,13 +124,10 @@ acx.getOrdersByPrice('buy', '0.046446', (data)=>{
 ```
 ### Get my orders by order id
 Get information of specified order by order id
-<<<<<<< HEAD
-=======
 | parameter | type   |required?|  description |
 | ---------| -------| ------|----------------------------------------------- |
 | `order_id`| Integer | required | Unique order id. |
 
->>>>>>> parent of 45fecc3... readme fix parameter table format issue
 ```javascript
 acx.getOrderById('536747', (data)=>{
     console.log(data);

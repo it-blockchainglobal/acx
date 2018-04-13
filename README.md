@@ -33,8 +33,50 @@ acx.getMyAccount().then(data => {
 }).catch(e => { console.error(e); });
 ```
 
+<<<<<<< HEAD
 #### Get my trade history
 Get recent 50 trades in descending order.
+=======
+#### Get recent trades on the market
+| parameter | type   |required?|  description                                      |
+| --------- | ------- | ------|------------------------------------------------ |
+| `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
+| `order_by`| String | optional | If set, returned trades will be sorted in specific order, default to 'desc'(reverse creation order). |
+| `limit` | Integer | optional | Limit the number of returned trades. Default to 50. |
+| `from` | Integer | optional | Trade id. If set, only trades created after the trade will be returned. |
+| `to` | Integer | optional | Trade id. If set, only trades created before the trade will be returned. |
+| `timestamp` | Integer | optional | An integer represents the seconds elapsed since Unix epoch. If set, only trades executed before the time will be returned. |
+
+
+```javascript
+acx.getMarketTrades().then(data => {
+    console.log(data)
+}).catch(e => { console.error(e); });
+```
+```javascript
+acx.getMarketTrades({from:7476198, order_by:'asc'}).then(data => {
+    console.log(data)
+}).catch(e => { console.error(e); });
+```
+```javascript
+acx.getMarketTrades({timestamp:1522904400}).then(data => {
+    console.log(data);
+}).catch(e => { console.error(e); });
+```
+
+
+#### Get my trade history
+Get recent 50 trades in descending order.
+| parameter | type   |required?|  description  |
+| ---------| -------| ------|-----------------------------------------------|
+| `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
+| `order_by`| String | optional | If set, returned trades will be sorted in specific order, default to 'desc'(reverse creation order).|
+| `limit` | Integer | optional | Limit the number of returned trades. Default to 50. |
+| `from` | Integer | optional | Trade id. If set, only trades created after the trade will be returned. |
+| `to` | Integer | optional | Trade id. If set, only trades created before the trade will be returned. |
+| `timestamp` | Integer | optional |An integer represents the seconds elapsed since Unix epoch. If set, only trades executed before the time will be returned.|
+
+>>>>>>> parent of 45fecc3... readme fix parameter table format issue
 ```javascript
 acx.getMyTrades().then(data => {
     console.log(data);
@@ -63,6 +105,18 @@ acx.getOrders((data)=>{
     console.log(data);
 })
 ```
+<<<<<<< HEAD
+=======
+#### Update my order by order id
+
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
+| `order_id`| Integer | required | Unique order id. |
+| `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
+| `side` | String | optional | Either 'sell' or 'buy'. |
+| `price` | Float | optional | Price for each unit.|
+| `volumn` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0', its executed volume is '3.0'.|
+>>>>>>> parent of 45fecc3... readme fix parameter table format issue
 
 #### Get my orders by price
 Get my resent open orders by side(buy/sell) and price
@@ -73,6 +127,13 @@ acx.getOrdersByPrice('buy', '0.046446', (data)=>{
 ```
 ### Get my orders by order id
 Get information of specified order by order id
+<<<<<<< HEAD
+=======
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
+| `order_id`| Integer | required | Unique order id. |
+
+>>>>>>> parent of 45fecc3... readme fix parameter table format issue
 ```javascript
 acx.getOrderById('536747', (data)=>{
     console.log(data);

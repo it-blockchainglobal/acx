@@ -1,6 +1,6 @@
 {
   "name": "acx",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "dependencies": {
     "bluebird": "^3.5.1",
     "crypto-js": "^3.1.9-1",

@@ -45,6 +45,7 @@ acx.getMyAccount().then(data => {
 ```
 
 #### Get recent trades on the market
+
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
 | `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
@@ -74,6 +75,7 @@ acx.getMarketTrades({timestamp:1522904400}).then(data => {
 
 #### Get my trade history
 Get recent 50 trades in descending order.
+
 | parameter | type   |required?|  description  |
 | ---------| -------| ------|-----------------------------------------------|
 | `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
@@ -143,7 +145,7 @@ acx.getOrders({ limit: 2, page: 2 }).then(data => {
 | `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
 | `side` | String | optional | Either 'sell' or 'buy'. |
 | `price` | Float | optional | Price for each unit.|
-| `volumn` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0', its executed volume is '3.0'.|
+| `volumn` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0' ,its executed volume is '3.0'.|
 
 ```javascript
 acx.updateOrderById({id: 536786, volume: 0.012}).then(data => {
@@ -158,6 +160,7 @@ acx.updateOrderById({id: 536786, price: 0.044532, volume: 0.012}).then(data => {
 
 #### Get my orders by order id
 Get information of specified order by order id
+
 | parameter | type   |required?|  description |
 | ---------| -------| ------|----------------------------------------------- |
 | `order_id`| Integer | required | Unique order id. |

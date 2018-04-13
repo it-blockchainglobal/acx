@@ -36,6 +36,16 @@ class ACX {
         if (!verb) throw Error('Request Query Parameter: verb');
         if (!uri) throw Error('Request Query Parameter: uri');
         if (!params) throw Error('Request Query Parameter: params');
+        params.tonce = (new Date).getTime();
+        if (params.side) { params.side = params.side.toLowerCase() }
+        if (params.market) { params.market = params.market.toLowerCase() }
+        if (params.currency) { params.currency = params.currency.toLowerCase(); }
+        if (params.state) { params.state = params.state.toLowerCase(); }
+        if (params.order_by) {
+            params.order_by = params.order_by.toLowerCase();
+            if (params.order_by != 'desc' && params.order_by != 'asc') { params.order_by = 'desc'; }
+        }
+        Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
         params.signature = this.getSignature(verb, uri, params);
         return params;
     }
@@ -61,96 +71,79 @@ class ACX {
     }
     getMyAccount() {
         let uri = '/api/v2/members/me.json';
-        let params = {tonce: (new Date).getTime()};
-        return new Promise((resolve, reject)=>{
+        let params = {};
+        return new Promise((resolve, reject) => {
             this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getMyAccount');
         });
     }
-    getMyTrades({ market = this.market, order_by='desc'?'desc':'asc', limit=50, tonce=(new Date).getTime(), from=undefined, to=undefined, timestamp=undefined}={}) {
-        let uri = '/api/v2/trades/my.json';
-        let params = {market: market, tonce: tonce};
+    getMarketTrades({ market = this.market, order_by = 'desc', limit = 50, from = undefined, to = undefined, timestamp = undefined } = {}) {
+        let params = { market: market };
         Object.assign(params, arguments[0]);
-        return new Promise((resolve, reject)=>{
+        return new Promise((resolve, reject) => {
+            this.get('/api/v2/trades.json', params, resolve, 'getMarketTrades');
+        });
+    }
+    getMyTrades({ market = this.market, order_by = 'desc', limit = 50, from = undefined, to = undefined, timestamp = undefined } = {}) {
+        let uri = '/api/v2/trades/my.json';
+        let params = { market: market };
+        Object.assign(params, arguments[0]);
+        return new Promise((resolve, reject) => {
             this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getMyTrades');
         });
-        
+
     }
-    getOrders(callback) {
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/orders.json';
-        this.get(
-            uri,
-            {
-                'market': this.market,
-                'tonce': tonce,
-                'order_by': 'desc',
-                'signature': this.getSignature('GET', uri, { 'market': this.market, 'order_by': 'desc', 'tonce': tonce })
-            }, (data) => {
-                if (callback) { callback(data); }
-            }, 'getOrders');
+    getOrders({ market = this.market, order_by = 'desc', state = undefined, limit = 100, page = 1 } = {}) {
+        let uri = '/api/v2/orders.json';
+        let params = { market: market, order_by: order_by, state: state, limit: limit, page: page };
+        Object.assign(params, arguments[0]);
+        return new Promise((resolve, reject) => {
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getOrders');
+        });
     }
-    getOrdersByPrice(side, price, callback) {
-        if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
-        if (!price) throw Error('updateOrderById: Invalid Order Price');
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/orders.json';
-        this.get(uri, { 'market': this.market, 'tonce': tonce, 'state': 'wait', 'signature': this.getSignature('GET', uri, { 'market': this.market, 'tonce': tonce, 'state': 'wait' }) }, (data) => {
-            var orders = data.filter((order) => { return Number(order.price) == Number(price) && order.side.toLowerCase() == side.toLowerCase(); });
-            if (callback) { callback(orders); }
-        }, 'getOrdersByPrice');
+    getOrderById(id) {
+        if (!id || isNaN(id)) throw Error('getOrderById: Invalid order id');
+        let uri = '/api/v2/order.json';
+        let params = { id: id };
+        return new Promise((resolve, reject) => {
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getOrderById');
+        });
     }
-    getOrderById(id, callback) {
-        if (id) {
-            var tonce = (new Date).getTime();
-            var uri = '/api/v2/order.json';
-            this.get(uri, { 'id': id, 'tonce': tonce, 'signature': this.getSignature('GET', uri, { 'id': id, 'tonce': tonce }) }, (data) => {
-                //console.log(data);
-                if (callback) { callback(data); }
-            }, 'getOrderById');
-        }
+    getDeposits({ currency = undefined, limit = undefined, state = undefined } = {}) {
+        let uri = '/api/v2/deposits.json';
+        let params = { currency: currency, limit: limit, state: state };
+        Object.assign(params, arguments[0]);
+        return new Promise((resolve, reject) => {
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getDeposits');
+        });
     }
-    getDeposits(currency, callback) {
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/deposits.json';
-        var query = { 'tonce': tonce };
-        if (currency) {
-            query.currency = currency.toLowerCase();
-            query.signature = this.getSignature('GET', uri, { 'tonce': tonce, currency: currency.toLowerCase() });
-        }
-        else {
-            query.signature = this.getSignature('GET', uri, { 'tonce': tonce });
-        }
-        this.get(uri, query, (data) => {
-            //console.log(data);
-            if (callback) { callback(data); }
-        }, 'getDeposits');
+    getDeposit(txid) {
+        if (!txid) throw Error('getDeposit: Invalid deposit txid');
+        let uri = '/api/v2/deposit.json';
+        let params = { txid: txid };
+        return new Promise((resolve, reject) => {
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getDeposit');
+        });
     }
-    clearOrders(side, callback) {
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/orders/clear.json';
-        var query = { 'tonce': tonce };
-        if (side && (side.toLowerCase() == 'buy' || side.toLowerCase() == 'sell')) {
-            query.side = side.toLowerCase();
-            query.signature = this.getSignature('POST', uri, { 'tonce': tonce, side: side.toLowerCase() });
-        }
-        else {
-            query.signature = this.getSignature('POST', uri, { 'tonce': tonce });
-        }
-        this.post(uri,
-            query,
-            data => {
-                if (side) {
-                    console.log("Orders " + side.toLowerCase() + " cleared");
-                }
-                else {
-                    console.log("All orders cleared");
-                }
-                if (callback) { callback(data); }
-            },
-            'clearOrders'
-        );
+    getDepositAddress(currency = 'aud') {
+        if (!currency) throw Error('getDepositAddress: Invalid currency');
+        let uri = '/api/v2/deposit_address.json';
+        let params = { currency: currency };
+        return new Promise((resolve, reject) => {
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getDepositAddress');
+        });
     }
-    placeOrders(orders, callback) {
+    clearOrders({ side = undefined } = {}) {
+        let uri = '/api/v2/orders/clear.json';
+        let params = { side: side };
+        return new Promise((resolve, reject) => {
+            this.post(uri, this.getQueryParams('POST', uri, params), data => {
+                if (side) { console.log(side.toUpperCase() + " Orders cancelled"); }
+                else { console.log("All orders cancelled"); }
+                resolve(data);
+            }, 'clearOrders');
+        });
+    }
+    placeOrders(orders = []) {
         var form = new FormData();
         var tonce = (new Date).getTime();
         var uri = '/api/v2/orders/multi';
@@ -168,31 +161,29 @@ class ACX {
             form.append('orders[][volume]', order.volume);
         });
         form.append('signature', this.getSignature('POST|' + uri + '|access_key=' + this.access_key + '&market=' + this.market + ordersStr + '&tonce=' + tonce));
-
-        form.submit(this.restApiEndPoint + uri, (err, res) => {
-            if (err) { console.log(err); }
-            else {
-                if (callback) { callback(res); }
-                console.log(res.headers.status)
-                //console.log("New orders placed");
-                res.resume();
-            }
+        return new Promise((resolve, reject) => {
+            form.submit(this.restApiEndPoint + uri, (err, res) => {
+                if (err) { console.log(err); reject(err); }
+                else {
+                    console.log(res.statusMessage)
+                    resolve(res.statusMessage);
+                    res.resume();
+                }
+            });
         });
     }
-    placeOrder(order, callback) {
+    placeOrder({ market = this.market, side = undefined, price = undefined, volume = undefined } = {}) {
+        //placeOrder(order, callback) {
         if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
-        if (!price) throw Error('updateOrderById: Invalid Order Price');
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/orders.json';
-        this.post(uri,
-            {
-                'market': this.market, 'tonce': tonce, 'price': order.price, 'side': order.side.toLowerCase(), 'volume': order.volume,
-                'signature': this.getSignature('POST', uri, { 'market': this.market, 'tonce': tonce, 'price': order.price, 'side': order.side.toLowerCase(), 'volume': order.volume })
-            },
-            (data) => {
-                console.log(order.side.toLowerCase() + " order " + data.id + " created on " + tonce);
-                if (callback) { callback(data); }
+        if (!volume) throw Error('updateOrderById: Invalid Order volume');
+        let uri = '/api/v2/orders.json';
+        let params = { market: market, side: side, price: price, volume: volume };
+        return new Promise((resolve, reject) => {
+            this.post(uri, this.getQueryParams('POST', uri, params), data => {
+                console.log(params.side + " order " + data.id + " created on " + params.tonce);
+                resolve(data);
             }, 'placeOrder');
+        });
     }
     updateOrdersByPrice(side, price, volume, callback) {
         if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
@@ -231,32 +222,76 @@ class ACX {
             }
         });
     }
-    updateOrderById(id, side, price, volume, callback) {
+    updateOrderById({ market = this.market, id = undefined, side = undefined, price = undefined, volume = undefined } = {}) {
         if (!id) throw Error('updateOrderById: Invalid Order ID');
-        if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
-        if (!price) throw Error('updateOrderById: Invalid Order Price');
-        if (!volume) throw Error('updateOrderById: Invalid Order volume');
-        this.deleteOrder(id, (data) => {
-            this.placeOrder({ side: side.toLowerCase(), volume: volume, price: price });
-            if (callback) { callback(data); }
+        let params = { market: market, id: id };
+        return new Promise((resolve, reject) => {
+            this.deleteOrder(id).then(data => {
+                if (!side) { side = data.side; }
+                if (!volume) { volume = data.volume; }
+                if (!price) { price = data.price; }
+                this.placeOrder({ market: market, side: side, price: price, volume: volume }).then(order => {
+                    resolve(order);
+                }).catch(e => { console.error(e); })
+            });
         });
     }
-    deleteOrder(id, callback) {
-        if (!id) throw Error('deleteOrder: Invalid Order ID');
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/order/delete.json';
-        this.post(uri,
-            {
-                'id': id, 'tonce': tonce,
-                'signature': this.getSignature('POST', uri, { 'id': id, 'tonce': tonce }, callback)
-            },
-            (data) => {
-                console.log('Order ' + data.id + " deleted on " + (new Date).getTime());
-                if (callback) { callback(data); }
+    deleteOrder(id) {
+        if (!id || isNaN(id)) throw Error('deleteOrder: Invalid order id');
+        let uri = '/api/v2/order/delete.json';
+        let params = { id: id };
+        return new Promise((resolve, reject) => {
+            this.post(uri, this.getQueryParams('POST', uri, params), data => {
+                console.log("Order " + data.id + " cancelled ");
+                resolve(data);
             }, 'deleteOrder');
+        });
+    }
+    getMarkets() {
+        return new Promise((resolve, reject) => {
+            this.get('/api/v2/markets.json', null, resolve, 'getMarkets');
+        });
+    }
+    getTickers() {
+        return new Promise((resolve, reject) => {
+            this.get('/api/v2/tickers.json', null, resolve, 'getTickers');
+        });
+    }
+    getOrderBook({ market = this.market, ask_limit = 20, bids_limit = 20 } = {}) {
+        let params = { market: market, ask_limit: ask_limit, bids_limit: bids_limit };
+        return new Promise((resolve, reject) => {
+            this.get('/api/v2/order_book.json', params, resolve, 'getOrderBook');
+        });
+    }
+    getDepth({ market = this.market, limit = 300 } = {}) {
+        let params = { market: market, limit: limit };
+        return new Promise((resolve, reject) => {
+            this.get('/api/v2/depth.json', params, resolve, 'getDepth');
+        });
+    }
+    getKLine({ market = this.market, limit = 30, period = 1, timestamp = undefined } = {}) {
+        let params = { market: market, limit: limit };
+        if(period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p=>{ return p == period }).length==0){ throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
+        Object.assign(params, arguments[0]);
+        return new Promise((resolve, reject) => {
+            this.get('/api/v2/k.json', params, resolve, 'getKLine');
+        });
+    }
+    getKLineWithPendingTrades({ market = this.market, limit = 30, period = 1, timestamp = undefined } = {}) {
+        let params = { market: market, limit: limit };
+        if(period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p=>{ return p == period }).length==0){ throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
+        Object.assign(params, arguments[0]);
+        return new Promise((resolve, reject) => {
+            this.get('/api/v2/k_with_pending_trades.json', params, resolve, 'getKLineWithPendingTrades');
+        });
+    }
+    getServerTimestamp() {
+        return new Promise((resolve, reject) => {
+            this.get('/api/v2/timestamp.json', null, resolve, 'getServerTimestamp');
+        });
     }
     get(uri, query, callback, source) {
-        var options = { uri: this.restApiEndPoint + uri, json: true };
+        let options = { uri: this.restApiEndPoint + uri, json: true };
         if (query) {
             options.qs = query;
             options.qs.access_key = this.access_key;

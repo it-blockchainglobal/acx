@@ -1,11 +1,10 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-iExample.js
-vim.exe.stackdump
-
-# Dependency directories
 node_modules
 example
+logs
+
+*.log
+npm-debug.log*
+vim.exe.stackdump
 .vscode/launch.json
+
+

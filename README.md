@@ -4,7 +4,11 @@
 [![npm](https://img.shields.io/npm/l/acx.svg)](https://www.npmjs.com/package/acx)
 
 # ACX API & WebSocket Utilities 
-This project is designed to help you make your own projects that interact with the [ACX Exchange](https://help.acx.io/api).
+This projectis designed to help you make your own projects that interact with the [ACX Exchange](https://help.acx.io/api).
+
+ACX is ambitious, awesome, advanced and Australian. Since 2013, we've taken the complexity out of trading and owning digital currencies for everyone in Australian and beyond. Our goal at ACX is to provide the highest quality, instant and simplified purchasing experience for customers looking to acquire Blockchain Backed assets, starting with Bitcoin.
+
+###[Read Full Usage Guide On GitHub](https://it-blockchainglobal.github.io/acx/) 
 
 ## Getting started
 
@@ -75,8 +79,6 @@ acx.getMyTrades({timestamp:1522904400}).then(data => {
 
 #### Get my open orders
 Get my recent open orders. 
-* Paginated results is still under development.
-* Sorting function is still under development.
 ```javascript
 acx.getOrders().then(data => {
     console.log(data)
@@ -97,7 +99,7 @@ acx.getOrders({ limit: 2, page: 2 }).then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Update my order by order id
+#### Update my order by order id
 ```javascript
 acx.updateOrderById({id: 536786, volume: 0.012}).then(data => {
     console.log(data)
@@ -109,7 +111,7 @@ acx.updateOrderById({id: 536786, price: 0.044532, volume: 0.012}).then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get my orders by order id
+#### Get my orders by order id
 Get information of specified order by order id
 ```javascript
 acx.getOrderById(536786).then(data => {
@@ -134,19 +136,19 @@ acx.getDeposits({ state: 'submitting', limit: 10 }).then(data=>{
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Get my deposit by txid
+#### Get my deposit by txid
 ```javascript
 acx.getDeposit('mock29c5de23a0dfc10648fb5f128ff5bd140e153a5a99d0208b9f3d755e29721137').then(data => {
     console.log(data)
 });
 ```
-### Get my deposit address by currency
+#### Get my deposit address by currency
 ```javascript
 acx.getDepositAddress('btc').then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Create multiple sell/buy orders
+#### Create multiple sell/buy orders
 Create multiple sell/buy orders by list of order objects. Response status message will be display.
 ```javascript
 acx.placeOrders([
@@ -156,14 +158,14 @@ acx.placeOrders([
 }).catch(e => { console.error(e); });
 ```
 
-### Cancel an order
+#### Cancel an order
 Cancel a specific order by order id
 ```javascript
 acx.deleteOrder(536791).then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Bulk cancel orders
+#### Bulk cancel orders
 Cancel all your orders
 ```javascript
 acx.clearOrders();
@@ -180,7 +182,7 @@ acx.clearOrders({side:'buy'}).then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get order book by market
+#### Get order book by market
 
 ```javascript
 acx.getOrderBook({market:'btcaud'}).then(data => {
@@ -222,7 +224,7 @@ acx.getDepth({limit:1000}).then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get OHLC(K Line) of specific market
+#### Get OHLC(K Line) of specific market
 ```javascript
 //Time period of K line, default to 1. You can choose between 1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080
 acx.getKLine({period:5}).then(data => {
@@ -236,7 +238,8 @@ acx.getKLine().then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get K data with pending trades, which are the trades not included in K data yet, because there's delay between trade generated and processed by K data generator.
+#### Get K data with pending trades
+Get K data with pending trades are the trades not included in K data yet, because there's delay between trade generated and processed by K data generator.
 ```javascript
 //Time period of K line, default to 1. You can choose between 1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080
 acx.getKLineWithPendingTrades({period:5}).then(data => {
@@ -251,7 +254,7 @@ acx.getKLineWithPendingTrades().then(data => {
 ```
 
 
-### Get server current time, in seconds since Unix epoch.
+#### Get server current time, in seconds since Unix epoch.
 ```javascript
 acx.getServerTimestamp().then(data => {
     console.log(data)

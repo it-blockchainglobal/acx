@@ -1,6 +1,6 @@
 {
   "name": "acx",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "dependencies": {
     "bluebird": "^3.5.1",
     "crypto-js": "^3.1.9-1",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/it-blockchainglobal/acx-api.git"
+    "url": "git://github.com/it-blockchainglobal/acx.git"
   },
   "keywords": [
     "ACX",
@@ -31,7 +31,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/it-blockchainglobal/acx-api/issues"
+    "url": "https://github.com/it-blockchainglobal/acx/issues"
   },
-  "homepage": "https://github.com/it-blockchainglobal/acx-api#readme"
+  "homepage": "https://github.com/it-blockchainglobal/acx#readme"
 }

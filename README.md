@@ -4,7 +4,11 @@
 [![npm](https://img.shields.io/npm/l/acx.svg)](https://www.npmjs.com/package/acx)
 
 # ACX API & WebSocket Utilities 
-This project is designed to help you make your own projects that interact with the [ACX Exchange](https://help.acx.io/api).
+This projectis designed to help you make your own projects that interact with the [ACX Exchange](https://help.acx.io/api).
+
+ACX is ambitious, awesome, advanced and Australian. Since 2013, we've taken the complexity out of trading and owning digital currencies for everyone in Australian and beyond. Our goal at ACX is to provide the highest quality, instant and simplified purchasing experience for customers looking to acquire Blockchain Backed assets, starting with Bitcoin.
+
+###[Read Full Usage Guide On GitHub](https://it-blockchainglobal.github.io/acx/) 
 
 ## Getting started
 
@@ -39,7 +43,7 @@ acx.getMyAccount().then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get recent trades on the market
+#### Get recent trades on the market
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
 | `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
@@ -128,7 +132,7 @@ acx.getOrders({ limit: 2, page: 2 }).then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Update my order by order id
+#### Update my order by order id
 
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
@@ -139,6 +143,7 @@ acx.getOrders({ limit: 2, page: 2 }).then(data => {
 | `volumn` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0', its executed volume is '3.0'.|
 
 
+#### Update my order by order id
 ```javascript
 acx.updateOrderById({id: 536786, volume: 0.012}).then(data => {
     console.log(data)
@@ -150,7 +155,7 @@ acx.updateOrderById({id: 536786, price: 0.044532, volume: 0.012}).then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get my orders by order id
+#### Get my orders by order id
 Get information of specified order by order id
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
@@ -186,31 +191,35 @@ acx.getDeposits({ state: 'submitting', limit: 10 }).then(data=>{
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Get my deposit by txid
+#### Get my deposit by txid
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------ | ------------------------------------------------ |
 | `txid` | String | Required | transaction ID  |
+#### Get my deposit by txid
 ```javascript
 acx.getDeposit('mock29c5de23a0dfc10648fb5f128ff5bd140e153a5a99d0208b9f3d755e29721137').then(data => {
     console.log(data)
 });
 ```
-### Get my deposit address by currency
+#### Get my deposit address by currency
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------ | ------------------------------------------------ |
 | `currency` | String | Optional | currency value(contains btc, aud, bch, eth, hsr, fuel, ubtc, eet, dash). Default to 'aud'.  |
+#### Get my deposit address by currency
 ```javascript
 acx.getDepositAddress('btc').then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Create multiple sell/buy orders
+#### Create multiple sell/buy orders
 Create multiple sell/buy orders by list of order objects. Response status message will be displayed.
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
 | `side` | String | optional | Either 'sell' or 'buy'. |
 | `price` | Float | optional | Price for each unit.|
 | `volumn` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0', its executed volume is '3.0'.|
+#### Create multiple sell/buy orders
+Create multiple sell/buy orders by list of order objects. Response status message will be display.
 ```javascript
 acx.placeOrders([
         {side: 'sell', price: 0.04452900, volume: 0.1},
@@ -219,7 +228,7 @@ acx.placeOrders([
 }).catch(e => { console.error(e); });
 ```
 
-### Cancel an order
+#### Cancel an order
 Cancel a specific order by order id
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
@@ -229,7 +238,7 @@ acx.deleteOrder(536791).then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Bulk cancel orders
+#### Bulk cancel orders
 Cancel all your orders
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
@@ -249,12 +258,14 @@ acx.clearOrders({side:'buy'}).then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get order book by market
+#### Get order book by market
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
 | `market`    | String | optional  | Market you want to get data from, default to the one specified on initialization. |
 | `asks_limit`    | Integer | optional  | Limit the number of returned sell orders. Default to 20. |
 | `bids_limit`    | Integer | optional  | Limit the number of returned buy orders. Default to 20. |
+#### Get order book by market
+
 ```javascript
 acx.getOrderBook({market:'btcaud'}).then(data => {
     console.log(data)
@@ -299,7 +310,7 @@ acx.getDepth({limit:1000}).then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get OHLC(K Line) of specific market
+#### Get OHLC(K Line) of specific market
   
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
@@ -307,6 +318,7 @@ acx.getDepth({limit:1000}).then(data => {
 | `limit`    | Integer | optional  | Limit the number of returned data points. Default to 30. |
 | `period`    | Integer | optional  | Time period of K line, default to 1. You can choose between 1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080 |
 | `timestamp`    | Integer | optional  | 	An integer represents the seconds elapsed since Unix epoch. If set, only k-line data after that time will be returned. |
+#### Get OHLC(K Line) of specific market
 ```javascript
 //Time period of K line, default to 1. You can choose between 1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080
 acx.getKLine({period:5}).then(data => {
@@ -320,7 +332,7 @@ acx.getKLine().then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-### Get K data with pending trades, which are the trades not included in K data yet, because there's delay between trade generated and processed by K data generator.
+#### Get K data with pending trades, which are the trades not included in K data yet, because there's delay between trade generated and processed by K data generator.
 
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
@@ -329,6 +341,8 @@ acx.getKLine().then(data => {
 | `limit`    | Integer | optional  | Limit the number of returned data points. Default to 30. |
 | `period`    | Integer | optional  | Time period of K line, default to 1. You can choose between 1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080 |
 | `timestamp` | Integer | optional  | An integer represents the seconds elapsed since Unix epoch. If set, only k-line data after that time will be returned. |
+#### Get K data with pending trades
+Get K data with pending trades are the trades not included in K data yet, because there's delay between trade generated and processed by K data generator.
 ```javascript
 //Time period of K line, default to 1. You can choose between 1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080
 acx.getKLineWithPendingTrades({period:5}).then(data => {
@@ -341,8 +355,8 @@ acx.getKLineWithPendingTrades().then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-### Get server current time, in seconds since Unix epoch.
 
+#### Get server current time, in seconds since Unix epoch.
 ```javascript
 acx.getServerTimestamp().then(data => {
     console.log(data)

@@ -277,8 +277,9 @@ class ACX {
             this.get('/api/v2/k.json', params, resolve, 'getKLine');
         });
     }
-    getKLineWithPendingTrades({ market = this.market, limit = 30, period = 1, timestamp = undefined } = {}) {
+    getKLineWithPendingTrades({ market = this.market, trade_id = undefined, limit = 30, period = 1, timestamp = undefined } = {}) {
         let params = { market: market, limit: limit };
+        if(!trade_id ) throw Error("getKLineWithPendingTrades: Invalid trade id");
         if(period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p=>{ return p == period }).length==0){ throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
         Object.assign(params, arguments[0]);
         return new Promise((resolve, reject) => {

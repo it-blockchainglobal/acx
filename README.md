@@ -33,10 +33,6 @@ acx.getMyAccount().then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-<<<<<<< HEAD
-#### Get my trade history
-Get recent 50 trades in descending order.
-=======
 #### Get recent trades on the market
 | parameter | type   |required?|  description                                      |
 | --------- | ------- | ------|------------------------------------------------ |
@@ -76,7 +72,6 @@ Get recent 50 trades in descending order.
 | `to` | Integer | optional | Trade id. If set, only trades created before the trade will be returned. |
 | `timestamp` | Integer | optional |An integer represents the seconds elapsed since Unix epoch. If set, only trades executed before the time will be returned.|
 
->>>>>>> parent of 45fecc3... readme fix parameter table format issue
 ```javascript
 acx.getMyTrades().then(data => {
     console.log(data);

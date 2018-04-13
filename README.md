@@ -34,7 +34,7 @@ acx.getMyAccount().then(data => {
 ```
 
 #### Get recent trades on the market
-| parameter | type   |required?|  description                                      |
+| parameter | type   |required?|  description|
 | --------- | ------- | ------|------------------------------------------------ |
 | `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
 | `order_by`| String | optional | If set, returned trades will be sorted in specific order, default to 'desc'(reverse creation order). |

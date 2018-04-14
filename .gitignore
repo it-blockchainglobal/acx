@@ -1,10 +1,11 @@
-node_modules
-example
+# Logs
 logs
-
 *.log
 npm-debug.log*
+iExample.js
 vim.exe.stackdump
+
+# Dependency directories
+node_modules
+example
 .vscode/launch.json
-
-

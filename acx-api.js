@@ -90,7 +90,6 @@ class ACX {
         return new Promise((resolve, reject) => {
             this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getMyTrades');
         });
-
     }
     getOrders({ market = this.market, order_by = 'desc', state = undefined, limit = 100, page = 1 } = {}) {
         let uri = '/api/v2/orders.json';

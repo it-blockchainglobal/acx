@@ -1,3 +1,4 @@
+![alt text](https://acx.io/static/c/logo.png)
 # ACX API & WebSocket Utilities
 
 [![GitHub last commit](https://img.shields.io/github/last-commit/it-blockchainglobal/acx-api.svg?maxAge=2400)](https://it-blockchainglobal.github.io/acx)
@@ -157,6 +158,8 @@ acx.getOrders({ limit: 2, page: 2 }).then(data => {
 | `side` | String | optional | Either 'sell' or 'buy'. |
 | `price` | Float | optional | Price for each unit.|
 | `volumn` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0' ,its executed volume is '3.0'.|
+
+This function cancel the order you specified and create a new order which attributes are modified based on original. The process is synchronous, you may have both orders in your record as the original order may not canceled straightway.
 
 ```javascript
 acx.updateOrderById({id: 536786, volume: 0.012}).then(data => {
@@ -416,6 +419,58 @@ acx.getServerTimestamp().then(data => {
 });
 ```
 
+#### Get your cryptocurrency withdraws
+
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
+| `currency` | String | Optional | currency value(contains btc, aud, bch, eth, hsr, fuel, ubtc, eet, dash).  |
+| `limit` | Integer | optional | Set result limit. |
+| `state` | String | optional | Filter deposits by state.|
+
+Function will return your recent cryptocurrency withdraws if limit not set.
+```javascript
+acx.getWithdraws().then(data=>{
+    console.log(data)
+}).catch(e => { console.error(e); });
+```
+Set more parameters to get cryptocurrency withdraws
+```javascript
+acx.getWithdraws({currency: 'aud'}).then(data=>{
+    console.log(data)
+}).catch(e => { console.error(e); });
+
+acx.getWithdraws({currency: 'aud', state: 'accepted', limit: 10}).then(data=>{
+    console.log(data)
+}).catch(e => { console.error(e); });
+```
+
+#### Get your cryptocurrency withdraw by id
+
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
+| `id` | String | Required | Withdrawal id |
+
+```javascript
+acx.getWithdrawById('25').then(data => {
+    console.log(data)
+}).catch(e => { console.error(e); });
+```
+
+#### Create a withdraw
+
+| parameter | type   |required?|  description                                      |
+| --------- | ------- | ------|------------------------------------------------ |
+| `currency`  | String | Optional  | The currency of withdrawal. Only btc is accepted. Default to 'btc' |
+| `sum`    | BigDecimal | Required  | Sum amount for withdrawal. |
+| `address`    | String | Required  | Crypto-currency address. Now only bitcoin address. |
+| `fee` | BigDecimal | optional  | Miner fee. Fee rate from 0.0001 to 0.001 /Kb. |
+
+```javascript
+acx.createWithdraw({sum:0.001, address: <'Crypto-currency address'>}).then(data => { 
+    console.log(data)
+}).catch(e => { console.error(e); });
+
+```
 ## Authors
 
 * **Sean Fang** - *Initial work*

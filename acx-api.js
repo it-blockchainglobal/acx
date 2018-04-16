@@ -277,7 +277,8 @@ class ACX {
             this.get('/api/v2/k.json', params, resolve, 'getKLine');
         });
     }
-    getKLineWithPendingTrades({ market = this.market, limit = 30, period = 1, timestamp = undefined } = {}) {
+    getKLineWithPendingTrades({ market = this.market, trade_id = undefined, limit = 30, period = 1, timestamp = undefined } = {}) {
+        if (!trade_id || isNaN(trade_id)) throw Error('getKLineWithPendingTrades: Invalid trade id');
         let params = { market: market, limit: limit };
         if(period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p=>{ return p == period }).length==0){ throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
         Object.assign(params, arguments[0]);
@@ -289,6 +290,35 @@ class ACX {
         return new Promise((resolve, reject) => {
             this.get('/api/v2/timestamp.json', null, resolve, 'getServerTimestamp');
         });
+    }
+    getWithdraws({ currency = undefined, limit = undefined, state = undefined } = {}){
+        let uri = '/api/v2/withdraws.json';
+        let params = { currency: currency, limit: limit, state: state };
+        Object.assign(params, arguments[0]);
+        return new Promise((resolve, reject) => {
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getWithdraws');
+        });
+    }
+    getWithdrawById(id){
+        if (!id || isNaN(id)) throw Error('getWithdrawById: Invalid withdraw id');
+        let uri = '/api/v2/withdraw.json';
+        let params = { id: id };
+        return new Promise((resolve, reject) => {
+            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getWithdrawById');
+        });
+    }
+    createWithdraw({currency='btc', sum=undefined, address=undefined, fee=undefined} = {}){
+        if(!sum || isNaN(sum)) throw Error('createWithdraw: Invalid sum amount for withdrawal.');
+        if(!address) throw Error('createWithdraw: Invalid Crypto-currency address.');
+        let uri = '/api/v2/withdraw.json';
+        let params = {currency: currency, sum: sum, address: address, fee: fee};
+
+        return new Promise((resolve, reject)=>{
+            this.post(uri, this.getQueryParams('POST', uri, params), data =>{
+                console.log('Withdraw '+ data.id + ' created on ' + params.tonce);
+                resolve(data);
+            }, 'createWithdraw');
+        })
     }
     get(uri, query, callback, source) {
         let options = { uri: this.restApiEndPoint + uri, json: true };

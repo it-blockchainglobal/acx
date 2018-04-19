@@ -13,12 +13,16 @@ const FormData = require('form-data');
 const Promise = require("bluebird");
 
 class ACX {
-    constructor(market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080') {
+    constructor(market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080', tradeFee = 0.002) {
         this.market = market;
+        this.tradeFee = tradeFee;
         this.restApiEndPoint = restApiEndPoint;
         this.ws = new WebSocket(socketEndPoint);;
         this.access_key = access_key;
         this.secret_key = secret_key;
+    }
+    setTradeFee(tradeFee = 0.002) {
+        this.tradeFee = tradeFee;
     }
     getSignature(verb, uri, query) {
         var queryStr = ""

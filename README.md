@@ -34,10 +34,18 @@ Please visit [ACX API Reference](https://help.acx.io/api) for more information.
 | `market`     | String | required  | markets available in ACX,  All available markets can be found at [ACX API Reference](https://acx.io//api/v2/markets).  |
 | `access_key`  | String | required| access key gain from ACX.io         |
 | `secret_key` | String  | required| secret key gain from ACX.io      |
+| `tradeFee` | Float  | optional| ACX trading fee, default value is 0.002 which is 0.2%      |
+| `restApiEndPoint` | String  | optional| ACX default rest API uri, default is https://acx.io:443      |
+| `socketEndPoint` | String  | optional| ACX default WebSocket end point, default is wss://acx.io:8080      |
 
 ```javascript
 const ACX = require('acx');
-var acx = new ACX("dashbtc", <access_key>, <secret_key>);
+var acx = new ACX({maret:"dashbtc", access_key:<access_key>, access_key:<secret_key>);
+```
+
+```javascript
+const ACX = require('acx');
+var acx = new ACX({maret:"dashbtc", access_key:<access_key>, access_key:<secret_key>, tradeFee:0.001);
 ```
 
 ### Functions

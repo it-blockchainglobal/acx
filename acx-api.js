@@ -13,9 +13,11 @@ const FormData = require('form-data');
 const Promise = require("bluebird");
 
 class OrderBook{
-    constructor(market, data={}){
+    constructor(market, data={}, minNumberOfOrders = 5, maxNumberOfOrders = 40){
         this.market = market;
         this.data = data;
+        this.minNumberOfOrders = minNumberOfOrders;
+        this.maxNumberOfOrders = maxNumberOfOrders;
     }
     ordersOfSide(type){
         if(type === 'ask'){
@@ -41,6 +43,10 @@ class OrderBook{
     }
     asksLength(){
         return this.data.asks.length;
+    }
+    orderLengthValidation(){
+        return this.bidsLength() < this.maxNumberOfOrders && this.bidsLength() > this.minNumberOfOrders 
+        && this.asksLength() < this.maxNumberOfOrders && this.asksLength() > this.minNumberOfOrders;
     }
     reformatOrder(order){
         let side = order.type == "ask"? "sell" : "buy";
@@ -158,9 +164,7 @@ class ACX {
                         onOrderbookChanged(self.orderBook.data); 
                     }
                     if(rcvData.orderbook.action && rcvData.orderbook.action == 'remove'){
-                        if(self.orderBook.asksLength() < 5 || self.orderBook.bidsLength() < 5){
-                            self.initOrderBook();
-                        }
+                        self.orderBookRefresh();
                     }
                 }
                 else if (rcvData.trade) {
@@ -457,6 +461,10 @@ class ACX {
         }).catch(error => {
             console.error(error);
         });
+    }
+    orderBookRefresh(){
+        if(!this.orderBook.orderLengthValidation()){this.initOrderBook();}
+        return;
     }
 }
 

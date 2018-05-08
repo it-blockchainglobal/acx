@@ -99,13 +99,17 @@ class OrderBook{
 }
 
 class ACX {
-    constructor(market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080') {
+    constructor({market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080', tradeFee = 0.002}) {
         this.market = market;
+        this.tradeFee = Number(tradeFee);
         this.restApiEndPoint = restApiEndPoint;
-        this.ws = new WebSocket(socketEndPoint);;
+        this.ws = new WebSocket(socketEndPoint);
         this.access_key = access_key;
         this.secret_key = secret_key;
         this.orderBook = new OrderBook(this.market);
+    }
+    setTradeFee(tradeFee = 0.002) {
+        this.tradeFee = Number(tradeFee);
     }
     getSignature(verb, uri, query) {
         var queryStr = ""

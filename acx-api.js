@@ -12,6 +12,92 @@ const WebSocket = require('ws');
 const FormData = require('form-data');
 const Promise = require("bluebird");
 
+class OrderBook{
+    constructor(market, data={}){
+        this.market = market;
+        this.data = data;
+    }
+    ordersOfSide(type){
+        if(type === 'ask'){
+            return this.data.asks;
+        }else if(type === 'bid'){
+            return this.data.bids;
+        }else{
+            return [];
+        }
+    }
+    sortBids(){
+        this.data.bids = this.data.bids.sort(function(order1, order2){
+            return parseFloat(order2.price) - parseFloat(order1.price);
+        })
+    }
+    sortAsks(){
+        this.data.asks = this.data.asks.sort(function(order1, order2){
+            return parseFloat(order1.price) - parseFloat(order2.price);
+        })
+    }
+    bidsLength(){
+        return this.data.bids.length;
+    }
+    asksLength(){
+        return this.data.asks.length;
+    }
+    reformatOrder(order){
+        let side = order.type == "ask"? "sell" : "buy";
+        return {id: order.id, side: side, ord_type: order.ord_type, price: order.price, 
+            market: order.market, remaining_volume: order.volume};
+    }
+    removeOrder(order){
+        var orderList = this.ordersOfSide(order.type || "");
+        for(let i=0; i<orderList.length; i++){
+            if(orderList[i].id === order.id){
+                orderList.splice(i, 1);
+                break;
+            }
+        }
+    }
+    addOrder(order){
+        var orderList = this.ordersOfSide(order.type || "");
+        orderList.push(this.reformatOrder(order));
+    }
+    updateOrder(order){
+        var orderList = this.ordersOfSide(order.type || "");
+        for(let i=0; i<orderList.length; i++){
+            if(orderList[i].id === order.id){
+                orderList[i] = this.reformatOrder(order);
+                break;
+            }
+        }
+    }
+    actionHandler(data){
+        if(!data.action || !data.order || !data.order.type){
+            console.error(`'Incorrect orderbook data: ${data}`);
+            return this.data
+        }
+        const action = data.action;
+        switch(action){
+            case "add":
+                this.addOrder(data.order);
+                break;
+            case "update":
+                this.updateOrder(data.order);
+                break;
+            case "remove":
+                this.removeOrder(data.order);
+                break;
+            default:
+                break;
+        }
+        if(data.order.type == "ask"){
+            this.sortAsks();
+        }else if(data.order.type == "bid"){
+            this.sortBids();
+        }else{
+            console.error
+        }
+    }
+}
+
 class ACX {
     constructor(market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080') {
         this.market = market;
@@ -19,6 +105,7 @@ class ACX {
         this.ws = new WebSocket(socketEndPoint);;
         this.access_key = access_key;
         this.secret_key = secret_key;
+        this.orderBook = new OrderBook(this.market);
     }
     getSignature(verb, uri, query) {
         var queryStr = ""
@@ -51,18 +138,33 @@ class ACX {
     }
     initWebSorket(onTradeChanged, onOrderbookChanged) {
         var self = this;
+        self.initOrderBook();
         self.ws.on('open', function open() {
             console.log('acx socket connected');
         });
         self.ws.on('message', function incoming(data) {
-            if (JSON.parse(data).challenge) {
-                self.ws.send('{"auth":{"access_key":"' + self.access_key + '","answer":"' + self.getSignature(self.access_key + JSON.parse(data).challenge) + '"}}');
-            }
-            else if (JSON.parse(data).orderbook) {
-                if (onOrderbookChanged) { onOrderbookChanged(JSON.parse(data).orderbook) }
-            }
-            else if (JSON.parse(data).trade) {
-                if (onTradeChanged) { onTradeChanged(JSON.parse(data).trade); }
+            let rcvData = JSON.parse(data);
+            if(rcvData){
+                if (rcvData.challenge) {
+                    self.ws.send('{"auth":{"access_key":"' + self.access_key + '","answer":"' + self.getSignature(self.access_key + rcvData.challenge) + '"}}');
+                }
+                else if (rcvData.orderbook && rcvData.orderbook.order.market == self.market) {
+                    if (onOrderbookChanged) { 
+                        self.orderBook.actionHandler(rcvData.orderbook)
+                        onOrderbookChanged(self.orderBook.data); 
+                    }
+                    if(rcvData.orderbook.action && rcvData.orderbook.action == 'remove'){
+                        if(self.orderBook.asksLength() < 5 || self.orderBook.bidsLength() < 5){
+                            self.initOrderBook();
+                        }
+                    }
+                }
+                else if (rcvData.trade) {
+                    if (onTradeChanged) { onTradeChanged(rcvData.trade); }
+                }
+                else{
+                    console.log(rcvData);
+                }
             }
             else {
                 console.log(data);
@@ -343,6 +445,13 @@ class ACX {
             if (callback) { callback(resp); }
         }).catch((err) => {
             console.log(source + " Error: " + err.message);
+        });
+    }
+    initOrderBook(){
+        this.getOrderBook().then( data => {
+            this.orderBook.data = data;
+        }).catch(error => {
+            console.error(error);
         });
     }
 }

@@ -13,8 +13,8 @@ const FormData = require('form-data');
 const Promise = require("bluebird");
 
 class OrderBook{
-    constructor(market, data={}, minNumberOfOrders = 5, maxNumberOfOrders = 40){
-        this.market = market;
+    constructor(market, data=null, minNumberOfOrders = 5, maxNumberOfOrders = 60){
+        this.market = market.toLowerCase();
         this.data = data;
         this.minNumberOfOrders = minNumberOfOrders;
         this.maxNumberOfOrders = maxNumberOfOrders;
@@ -132,7 +132,7 @@ class OrderBook{
 
 class ACX {
     constructor({market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080', tradeFee = 0.002}) {
-        this.market = market;
+        this.market = market.toLowerCase();
         this.tradeFee = Number(tradeFee);
         this.restApiEndPoint = restApiEndPoint;
         this.ws = new WebSocket(socketEndPoint);
@@ -184,7 +184,7 @@ class ACX {
                 if (rcvData.challenge) {
                     self.ws.send('{"auth":{"access_key":"' + self.access_key + '","answer":"' + self.getSignature(self.access_key + rcvData.challenge) + '"}}');
                 }
-                else if (rcvData.orderbook && rcvData.orderbook.order.market == self.market) {
+                else if (rcvData.orderbook && rcvData.orderbook.order.market == self.market && self.orderBook.data) {
                     if (onOrderbookChanged) { 
                         onOrderbookChanged(self.orderBook.actionHandler(rcvData.orderbook)); 
                     }
@@ -195,12 +195,6 @@ class ACX {
                 else if (rcvData.trade) {
                     if (onTradeChanged) { onTradeChanged(rcvData.trade); }
                 }
-                else{
-                    console.log(rcvData);
-                }
-            }
-            else {
-                console.log(data);
             }
         });
     }
@@ -481,7 +475,7 @@ class ACX {
         });
     }
     initOrderBook(){
-        this.getOrderBook().then( data => {
+        this.getOrderBook({ask_limit: 50, bids_limit: 50}).then( data => {
             this.orderBook.data = data;
             this.orderBook.sortAsks();
             this.orderBook.sortBids();

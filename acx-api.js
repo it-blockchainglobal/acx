@@ -31,12 +31,12 @@ class OrderBook{
     sortBids(){
         this.data.bids = this.data.bids.sort(function(order1, order2){
             return parseFloat(order2.price) - parseFloat(order1.price);
-        })
+        });
     }
     sortAsks(){
         this.data.asks = this.data.asks.sort(function(order1, order2){
-            return parseFloat(order1.price) - parseFloat(order2.price);
-        })
+            return parseFloat(order2.price) - parseFloat(order1.price);
+        });
     }
     bidsLength(){
         return this.data.bids.length;
@@ -68,20 +68,45 @@ class OrderBook{
     }
     updateOrder(order){
         var orderList = this.ordersOfSide(order.type || "");
+        let foundOrder = false;
         for(let i=0; i<orderList.length; i++){
             if(orderList[i].id === order.id){
                 orderList[i] = this.reformatOrder(order);
+                foundOrder = true;
                 break;
             }
         }
+        if(!foundOrder){ this.addOrder(order);}
+    }
+
+    orderbookResult(data = this.data){
+        
+        function mergeVolume(orders){
+            let result = [];
+            let tmp_idx = 0;
+            for(let idx = 0; idx < orders.length; idx++){
+                let ord = orders[idx];
+                if(result[tmp_idx] && result[tmp_idx].price == ord.price){
+                    result[tmp_idx].volume += parseFloat(ord.remaining_volume); 
+                }else{
+                    result.push({price: ord.price, volume: parseFloat(ord.remaining_volume)});
+                    tmp_idx = result.length-1;
+                }
+            }
+            return result;
+        }
+        let asksOrders = mergeVolume(data.asks);
+        let bidsOrders = mergeVolume(data.bids);
+    
+        return {asks: asksOrders, bids: bidsOrders};
+    
     }
     actionHandler(data){
         if(!data.action || !data.order || !data.order.type){
             console.error(`'Incorrect orderbook data: ${data}`);
             return this.data
         }
-        const action = data.action;
-        switch(action){
+        switch(data.action){
             case "add":
                 this.addOrder(data.order);
                 break;
@@ -99,8 +124,9 @@ class OrderBook{
         }else if(data.order.type == "bid"){
             this.sortBids();
         }else{
-            console.error
+            console.error(`Incorrect orderbook type: ${data.order.type}`);
         }
+        return this.orderbookResult();
     }
 }
 
@@ -160,8 +186,7 @@ class ACX {
                 }
                 else if (rcvData.orderbook && rcvData.orderbook.order.market == self.market) {
                     if (onOrderbookChanged) { 
-                        self.orderBook.actionHandler(rcvData.orderbook)
-                        onOrderbookChanged(self.orderBook.data); 
+                        onOrderbookChanged(self.orderBook.actionHandler(rcvData.orderbook)); 
                     }
                     if(rcvData.orderbook.action && rcvData.orderbook.action == 'remove'){
                         self.orderBookRefresh();
@@ -458,6 +483,8 @@ class ACX {
     initOrderBook(){
         this.getOrderBook().then( data => {
             this.orderBook.data = data;
+            this.orderBook.sortAsks();
+            this.orderBook.sortBids();
         }).catch(error => {
             console.error(error);
         });

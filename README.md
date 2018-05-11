@@ -25,7 +25,7 @@ npm install acx --save
 To get started, you need to request for access/secret key at first.
 Please visit [ACX API Reference](https://help.acx.io/api) for more information.
 
-## Usage
+## REST API Usage
 
 ### Initialise
 
@@ -479,6 +479,35 @@ acx.createWithdraw({sum:0.001, address: <'Crypto-currency address'>}).then(data 
 }).catch(e => { console.error(e); });
 
 ```
+## WebSocket Usage
+
+### Trades WebSocket
+```javascript
+acx.initWebSorket(data => {
+    console.log(data);
+}, null);
+
+```
+
+### Orderbook WebSocket
+```javascript
+acx.initWebSorket(null, data => {
+    console.log(data);
+});
+
+```
+
+### Combine WebSocket
+```javascript
+acx.initWebSorket(tradeChanges => {
+    console.log(tradeChanges);
+}, orderbookChanges => {
+    console.log(orderbookChanges);
+});
+
+```
+
+
 ## Authors
 
 * **Sean Fang** - *Initial work*

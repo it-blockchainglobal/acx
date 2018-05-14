@@ -12,101 +12,117 @@ const WebSocket = require('ws');
 const FormData = require('form-data');
 const Promise = require("bluebird");
 
-class OrderBook{
-    constructor(market, data=null, minNumberOfOrders = 5, maxNumberOfOrders = 60){
-        this.market = market.toLowerCase();
+class OrderBook {
+    constructor(market, data = null) {
+        if (market) { this.market = market.toLowerCase(); }
         this.data = data;
-        this.minNumberOfOrders = minNumberOfOrders;
-        this.maxNumberOfOrders = maxNumberOfOrders;
     }
-    ordersOfSide(type){
-        if(type === 'ask'){
+    minNumberOfOrders() {
+        return 5;
+    }
+    maxNumberOfOrders() {
+        return 60;
+    }
+    setData(data = null, limit) {
+        this.data = data;
+        this.data.asks = this.mergeVolume(data.asks, limit);
+        this.data.bids = this.mergeVolume(data.bids, limit);
+    }
+    ordersOfSide(type) {
+        if (type === 'ask') {
             return this.data.asks;
-        }else if(type === 'bid'){
+        } else if (type === 'bid') {
             return this.data.bids;
-        }else{
+        } else {
             return [];
         }
     }
-    sortBids(){
-        this.data.bids = this.data.bids.sort(function(order1, order2){
-            return parseFloat(order2.price) - parseFloat(order1.price);
-        });
-    }
-    sortAsks(){
-        this.data.asks = this.data.asks.sort(function(order1, order2){
-            return parseFloat(order2.price) - parseFloat(order1.price);
-        });
-    }
-    bidsLength(){
-        return this.data.bids.length;
-    }
-    asksLength(){
-        return this.data.asks.length;
-    }
-    orderLengthValidation(){
-        return this.bidsLength() < this.maxNumberOfOrders && this.bidsLength() > this.minNumberOfOrders 
-        && this.asksLength() < this.maxNumberOfOrders && this.asksLength() > this.minNumberOfOrders;
-    }
-    reformatOrder(order){
-        let side = order.type == "ask"? "sell" : "buy";
-        return {id: order.id, side: side, ord_type: order.ord_type, price: order.price, 
-            market: order.market, remaining_volume: order.volume};
-    }
-    removeOrder(order){
-        var orderList = this.ordersOfSide(order.type || "");
-        for(let i=0; i<orderList.length; i++){
-            if(orderList[i].id === order.id){
-                orderList.splice(i, 1);
-                break;
-            }
+    sortOrders(side = null) {
+        if(!side || side.toLowerCase() == "both" || side.toLowerCase() == "ask"){
+            this.data.bids = this.data.bids.sort(function (order1, order2) {
+                return Number(order2.price) - Number(order1.price);
+            });
+        }
+        if(!side || side.toLowerCase() == "both" || side.toLowerCase() == "bid"){
+            this.data.asks = this.data.asks.sort(function (order1, order2) {
+                return Number(order1.price) - Number(order2.price);
+            });
         }
     }
-    addOrder(order){
+    bidsLength() {
+        if (this.data) {
+            return this.data.bids.length;
+        }
+        return 0;
+    }
+    asksLength() {
+        if (this.data) {
+            return this.data.asks.length;
+        }
+        return 0;
+    }
+    // orderLengthValidation(limit) {
+    //     return this.bidsLength() < 60 
+    //         && this.bidsLength() > limit?limit:this.minNumberOfOrders()
+    //         && this.asksLength() < this.maxNumberOfOrders() 
+    //         && this.asksLength() > limit?limit:this.minNumberOfOrders();
+    // }
+    reformatOrder(order) {
+        let side = order.type == "ask" ? "sell" : "buy";
+        return {
+            id: order.id, side: side, ord_type: order.ord_type, price: Number(order.price),
+            market: order.market, remaining_volume: Number(order.volume)
+        };
+    }
+    removeOrder(order) {
+        var orderList = this.ordersOfSide(order.type || "");
+        let idx = orderList.findIndex(o => {return o.id == order.id});
+        if(idx >= 0){ orderList.splice(idx, 1); }
+    }
+    addOrder(order) {
         var orderList = this.ordersOfSide(order.type || "");
         orderList.push(this.reformatOrder(order));
     }
-    updateOrder(order){
+    updateOrder(order) {
         var orderList = this.ordersOfSide(order.type || "");
         let foundOrder = false;
-        for(let i=0; i<orderList.length; i++){
-            if(orderList[i].id === order.id){
+        for (let i = 0; i < orderList.length; i++) {
+            if (orderList[i].id === order.id) {
                 orderList[i] = this.reformatOrder(order);
                 foundOrder = true;
                 break;
             }
         }
-        if(!foundOrder){ this.addOrder(order);}
+        if (!foundOrder) { this.addOrder(order); }
     }
 
-    orderbookResult(data = this.data){
-        
-        function mergeVolume(orders){
-            let result = [];
-            let tmp_idx = 0;
-            for(let idx = 0; idx < orders.length; idx++){
-                let ord = orders[idx];
-                if(result[tmp_idx] && result[tmp_idx].price == ord.price){
-                    result[tmp_idx].volume += parseFloat(ord.remaining_volume); 
-                }else{
-                    result.push({price: ord.price, volume: parseFloat(ord.remaining_volume)});
-                    tmp_idx = result.length-1;
-                }
+    mergeVolume(orders = [], limit = 50) {
+        let result = [];
+        let tmp_idx = 0;
+        this.sortOrders();
+        for (let idx = 0; idx < orders.length; idx++) {
+            let ord = orders[idx];
+            if (result[tmp_idx] && Number(result[tmp_idx].price) == Number(ord.price)) {
+                result[tmp_idx].volume = Number(result[tmp_idx].volume) + Number(ord.remaining_volume ? ord.remaining_volume : ord.volume);
+            } else {
+                result.push({ price: Number(ord.price), volume: Number(ord.remaining_volume ? ord.remaining_volume : ord.volume) });
+                tmp_idx = result.length - 1;
             }
-            return result;
         }
-        let asksOrders = mergeVolume(data.asks);
-        let bidsOrders = mergeVolume(data.bids);
-    
-        return {asks: asksOrders, bids: bidsOrders};
-    
+        return result.splice(0, limit);
     }
-    actionHandler(data){
-        if(!data.action || !data.order || !data.order.type){
+
+    orderbookResult(limit = 50) {
+        this.data.asks = this.mergeVolume(this.data.asks, limit);
+        this.data.bids = this.mergeVolume(this.data.bids, limit);
+        return this.data;
+    }
+    actionHandler(data, limit = 50) {
+        if (!data.action || !data.order || !data.order.type) {
             console.error(`'Incorrect orderbook data: ${data}`);
             return this.data
         }
-        switch(data.action){
+        switch (data.action) {
             case "add":
                 this.addOrder(data.order);
                 break;
@@ -119,26 +135,19 @@ class OrderBook{
             default:
                 break;
         }
-        if(data.order.type == "ask"){
-            this.sortAsks();
-        }else if(data.order.type == "bid"){
-            this.sortBids();
-        }else{
-            console.error(`Incorrect orderbook type: ${data.order.type}`);
-        }
-        return this.orderbookResult();
+        
+        return this.orderbookResult(limit);
     }
 }
 
 class ACX {
-    constructor({market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080', tradeFee = 0.002}) {
-        this.market = market.toLowerCase();
+    constructor({ market, access_key, secret_key, restApiEndPoint = "https://acx.io:443", socketEndPoint = 'wss://acx.io:8080', tradeFee = 0.002 }) {
+        if (market) { this.market = market.toLowerCase(); }
         this.tradeFee = Number(tradeFee);
         this.restApiEndPoint = restApiEndPoint;
         this.ws = new WebSocket(socketEndPoint);
         this.access_key = access_key;
         this.secret_key = secret_key;
-        this.orderBook = new OrderBook(this.market);
     }
     setTradeFee(tradeFee = 0.002) {
         this.tradeFee = Number(tradeFee);
@@ -172,29 +181,52 @@ class ACX {
         params.signature = this.getSignature(verb, uri, params);
         return params;
     }
-    initWebSorket(onTradeChanged, onOrderbookChanged) {
+    initWebSorket({ onTradeChanged, onOrderbookChanged } = {}) {
         var self = this;
-        self.initOrderBook();
         self.ws.on('open', function open() {
             console.log('acx socket connected');
         });
         self.ws.on('message', function incoming(data) {
             let rcvData = JSON.parse(data);
-            if(rcvData){
+            if (rcvData) {
                 if (rcvData.challenge) {
                     self.ws.send('{"auth":{"access_key":"' + self.access_key + '","answer":"' + self.getSignature(self.access_key + rcvData.challenge) + '"}}');
                 }
-                else if (rcvData.orderbook && rcvData.orderbook.order.market == self.market && self.orderBook.data) {
-                    if (onOrderbookChanged) { 
-                        onOrderbookChanged(self.orderBook.actionHandler(rcvData.orderbook)); 
+            }
+        });
+    }
+    onOrderbookChanged(markets = [], callback = null, limit = 50) {
+        var self = this;
+        let orderbooks = Array.from(markets, m => (new OrderBook(m.toLowerCase())));
+        orderbooks.forEach(_orderbook => {
+            self.initOrderBook(_orderbook.market).then(data => { _orderbook.setData(data, limit); });
+        })
+        self.ws.on('message', data => {
+            let rcvData = JSON.parse(data);
+            if (rcvData && rcvData.orderbook) {
+                orderbooks.forEach(_orderbook => {
+                    if (_orderbook.market.toLowerCase() == rcvData.orderbook.order.market.toLowerCase() && _orderbook.data) {
+                        _orderbook.data = _orderbook.actionHandler(rcvData.orderbook, limit);
+                        if (rcvData.orderbook.action && (rcvData.orderbook.action == 'remove')) {
+                            //if (!_orderbook.orderLengthValidation(limit)) {
+                                self.initOrderBook(_orderbook.market).then(data => {
+                                    _orderbook.setData(data, limit);
+                                });
+                            //}
+
+                        }
                     }
-                    if(rcvData.orderbook.action && rcvData.orderbook.action == 'remove'){
-                        self.orderBookRefresh();
-                    }
-                }
-                else if (rcvData.trade) {
-                    if (onTradeChanged) { onTradeChanged(rcvData.trade); }
-                }
+                });
+                if (callback) { callback(orderbooks); }
+            }
+        });
+    }
+    onTradeChanged(callback = null) {
+        var self = this;
+        self.ws.on('message', data => {
+            let rcvData = JSON.parse(data);
+            if (rcvData && rcvData.trade) {
+                if (callback) { callback(rcvData.trade); }
             }
         });
     }
@@ -302,7 +334,6 @@ class ACX {
         });
     }
     placeOrder({ market = this.market, side = undefined, price = undefined, volume = undefined } = {}) {
-        //placeOrder(order, callback) {
         if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
         if (!volume) throw Error('updateOrderById: Invalid Order volume');
         let uri = '/api/v2/orders.json';
@@ -393,14 +424,33 @@ class ACX {
         });
     }
     getDepth({ market = this.market, limit = 300 } = {}) {
-        let params = { market: market, limit: limit };
+        if (limit <= 0) { limit = 1; }
+        let params = { market: market.toLowerCase(), limit: limit };
         return new Promise((resolve, reject) => {
-            this.get('/api/v2/depth.json', params, resolve, 'getDepth');
+            this.get('/api/v2/depth.json', params, (data) => {
+                //let depth = { timestampe: data.timestamp, asks: [], bids: [] };
+                let depth = { asks: [], bids: [] };
+                function calcSide(side) {
+                    let tempSide = [];
+                    if (limit > 1) {
+                        side.forEach(d => {
+                            tempSide.push({ price: Number(d[0]), volume: Number(d[1]) });
+                        });
+                    }
+                    else {
+                        tempSide = { price: Number(side[0][0]), volume: Number(side[0][1]) }
+                    }
+                    return tempSide;
+                }
+                depth.asks = calcSide(data.asks);
+                depth.bids = calcSide(data.bids);
+                resolve(depth);
+            }, 'getDepth');
         });
     }
     getKLine({ market = this.market, limit = 30, period = 1, timestamp = undefined } = {}) {
         let params = { market: market, limit: limit };
-        if(period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p=>{ return p == period }).length==0){ throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
+        if (period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p => { return p == period }).length == 0) { throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
         Object.assign(params, arguments[0]);
         return new Promise((resolve, reject) => {
             this.get('/api/v2/k.json', params, resolve, 'getKLine');
@@ -409,7 +459,7 @@ class ACX {
     getKLineWithPendingTrades({ market = this.market, trade_id = undefined, limit = 30, period = 1, timestamp = undefined } = {}) {
         if (!trade_id || isNaN(trade_id)) throw Error('getKLineWithPendingTrades: Invalid trade id');
         let params = { market: market, limit: limit };
-        if(period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p=>{ return p == period }).length==0){ throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
+        if (period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p => { return p == period }).length == 0) { throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
         Object.assign(params, arguments[0]);
         return new Promise((resolve, reject) => {
             this.get('/api/v2/k_with_pending_trades.json', params, resolve, 'getKLineWithPendingTrades');
@@ -420,7 +470,7 @@ class ACX {
             this.get('/api/v2/timestamp.json', null, resolve, 'getServerTimestamp');
         });
     }
-    getWithdraws({ currency = undefined, limit = undefined, state = undefined } = {}){
+    getWithdraws({ currency = undefined, limit = undefined, state = undefined } = {}) {
         let uri = '/api/v2/withdraws.json';
         let params = { currency: currency, limit: limit, state: state };
         Object.assign(params, arguments[0]);
@@ -428,7 +478,7 @@ class ACX {
             this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getWithdraws');
         });
     }
-    getWithdrawById(id){
+    getWithdrawById(id) {
         if (!id || isNaN(id)) throw Error('getWithdrawById: Invalid withdraw id');
         let uri = '/api/v2/withdraw.json';
         let params = { id: id };
@@ -436,15 +486,15 @@ class ACX {
             this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getWithdrawById');
         });
     }
-    createWithdraw({currency='btc', sum=undefined, address=undefined, fee=undefined} = {}){
-        if(!sum || isNaN(sum)) throw Error('createWithdraw: Invalid sum amount for withdrawal.');
-        if(!address) throw Error('createWithdraw: Invalid Crypto-currency address.');
+    createWithdraw({ currency = 'btc', sum = undefined, address = undefined, fee = undefined } = {}) {
+        if (!sum || isNaN(sum)) throw Error('createWithdraw: Invalid sum amount for withdrawal.');
+        if (!address) throw Error('createWithdraw: Invalid Crypto-currency address.');
         let uri = '/api/v2/withdraw.json';
-        let params = {currency: currency, sum: sum, address: address, fee: fee};
+        let params = { currency: currency, sum: sum, address: address, fee: fee };
 
-        return new Promise((resolve, reject)=>{
-            this.post(uri, this.getQueryParams('POST', uri, params), data =>{
-                console.log('Withdraw '+ data.id + ' created on ' + params.tonce);
+        return new Promise((resolve, reject) => {
+            this.post(uri, this.getQueryParams('POST', uri, params), data => {
+                console.log('Withdraw ' + data.id + ' created on ' + params.tonce);
                 resolve(data);
             }, 'createWithdraw');
         })
@@ -474,18 +524,14 @@ class ACX {
             console.log(source + " Error: " + err.message);
         });
     }
-    initOrderBook(){
-        this.getOrderBook({ask_limit: 50, bids_limit: 50}).then( data => {
-            this.orderBook.data = data;
-            this.orderBook.sortAsks();
-            this.orderBook.sortBids();
-        }).catch(error => {
-            console.error(error);
+    initOrderBook(market = this.market) {
+        return new Promise((resolve, reject) => {
+            this.getOrderBook({ market: market, ask_limit: 50, bids_limit: 50 }).then(data => {
+                resolve(data);
+            }).catch(error => {
+                reject(error);
+            });
         });
-    }
-    orderBookRefresh(){
-        if(!this.orderBook.orderLengthValidation()){this.initOrderBook();}
-        return;
     }
 }
 

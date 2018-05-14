@@ -481,32 +481,27 @@ acx.createWithdraw({sum:0.001, address: <'Crypto-currency address'>}).then(data 
 ```
 ## WebSocket Usage
 
-### Trades WebSocket
-```javascript
-acx.initWebSorket(data => {
-    console.log(data);
-}, null);
+### Initialise WebSocket
 
+```javascript
+acx.initWebSorket();
+
+```
+### Trades WebSocket
+
+```javascript
+acx.onTradeChanged((data) => {
+    console.log(data);
+});
 ```
 
 ### Orderbook WebSocket
+
 ```javascript
-acx.initWebSorket(null, data => {
+acx.onOrderbookChanged(['btcaud','ethaud'], (data) => {
     console.log(data);
-});
-
+}, 10);
 ```
-
-### Combine WebSocket
-```javascript
-acx.initWebSorket(tradeChanges => {
-    console.log(tradeChanges);
-}, orderbookChanges => {
-    console.log(orderbookChanges);
-});
-
-```
-
 
 ## Authors
 

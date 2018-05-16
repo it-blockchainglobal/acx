@@ -217,7 +217,10 @@ class ACX {
                         }
                     }
                 });
-                if (callback) { callback(orderbooks); }
+                let result = orderbooks.filter( ob => {return ob.data} );
+                if (callback && result.length >0 ) { 
+                    callback(result); 
+                }
             }
         });
     }

@@ -145,7 +145,8 @@ class ACX {
         if (market) { this.market = market.toLowerCase(); }
         this.tradeFee = Number(tradeFee);
         this.restApiEndPoint = restApiEndPoint;
-        this.ws = new WebSocket(socketEndPoint);
+        this.socketEndPoint = socketEndPoint;
+        this.ws = null;
         this.access_key = access_key;
         this.secret_key = secret_key;
     }
@@ -183,6 +184,7 @@ class ACX {
     }
     initWebSorket({ onTradeChanged, onOrderbookChanged } = {}) {
         var self = this;
+        self.ws = new WebSocket(self.socketEndPoint);
         self.ws.on('open', function open() {
             console.log('acx socket connected');
         });

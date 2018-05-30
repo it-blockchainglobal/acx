@@ -40,12 +40,12 @@ Please visit [ACX API Reference](https://help.acx.io/api) for more information.
 
 ```javascript
 const ACX = require('acx');
-var acx = new ACX({maret:"dashbtc", access_key:<access_key>, access_key:<secret_key>);
+var acx = new ACX({maret:"dashbtc", access_key:<access_key>, secret_key:<secret_key>);
 ```
 
 ```javascript
 const ACX = require('acx');
-var acx = new ACX({maret:"dashbtc", access_key:<access_key>, access_key:<secret_key>, tradeFee:0.001);
+var acx = new ACX({maret:"dashbtc", access_key:<access_key>, secret_key:<secret_key>, tradeFee:0.001);
 ```
 
 ### Functions

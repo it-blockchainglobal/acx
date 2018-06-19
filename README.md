@@ -254,7 +254,7 @@ Create multiple sell/buy orders by list of order objects. Response status messag
 | parameter | type   |required?|  description |
 | ---------| -------| ------|----------------------------------------------- |
 | `side` | String | optional | Either 'sell' or 'buy'. |
-| `price` | Float | optional | Price for each unit.|
+| `price` | Float | optional | Price for each unit. Leave empty to place market order|
 | `volume` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0', its executed volume is '3.0'.|
 
 ```javascript

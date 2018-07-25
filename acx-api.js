@@ -342,7 +342,12 @@ class ACX {
         if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
         if (!volume) throw Error('updateOrderById: Invalid Order volume');
         let uri = '/api/v2/orders.json';
-        let params = { market: market, side: side, price: price, volume: volume };
+        let params = { market: market, side: side, volume: volume };
+        if( !price ){
+            params.ord_type = 'market';
+        }else{
+            params.price = price;
+        }
         return new Promise((resolve, reject) => {
             this.post(uri, this.getQueryParams('POST', uri, params), data => {
                 console.log(params.side + " order " + data.id + " created on " + params.tonce);

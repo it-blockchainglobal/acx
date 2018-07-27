@@ -386,7 +386,7 @@ class ACX {
         }
         return this.post(uri, this.getQueryParams('POST', uri, params), 'deleteOrder');
     }
-    deleteOrders(ids = []) {
+    deleteOrders(ids = '') {
         let uri = '/api/v2/orders/delete.json';
         let params = { ids };
         return this.post(uri, this.getQueryParams('POST', uri, params), 'deleteOrders');

@@ -159,27 +159,7 @@ acx.getOrders({ limit: 2, page: 2 }).then(data => {
 
 #### Update my order by order id
 
-| parameter | type   |required?|  description |
-| ---------| -------| ------|----------------------------------------------- |
-| `order_id`| Integer | required | Unique order id. |
-| `market`    | String | optional  | Market you want to get trades from, default to the one specified on initialization. |
-| `side` | String | optional | Either 'sell' or 'buy'. |
-| `price` | Float | optional | Price for each unit.|
-| `volume` | Float | optional | The amount user want to sell/buy. An order could be partially executed, e.g. an order sell 5 btc can be matched with a buy 3 btc order, left 2 btc to be sold; in this case the order's volume would be '5.0', its remaining_volume would be '2.0' ,its executed volume is '3.0'.|
-
-This function cancel the order you specified and create a new order which attributes are modified based on original. The process is synchronous, you may have both orders in your record as the original order may not canceled straightway.
-
-```javascript
-acx.updateOrderById({id: 536786, volume: 0.012}).then(data => {
-    console.log(data)
-}).catch(e => { console.error(e); });
-```
-
-```javascript
-acx.updateOrderById({id: 536786, price: 0.044532, volume: 0.012}).then(data => {
-    console.log(data)
-}).catch(e => { console.error(e); });
-```
+This function has been abandoned.
 
 #### Get my orders by order id
 
@@ -285,6 +265,7 @@ Cancel all your orders
 
 | parameter | type   |required?|  description |
 | ---------| -------| ------|----------------------------------------------- |
+| `market`| String | optional | Market you want to get data from, default to the one specified on initialization. If present, only specified market orders will be canncelled.|
 | `side`| String | optional | Either 'sell' or 'buy'. |
 
 ```javascript
@@ -297,13 +278,26 @@ acx.clearOrders().then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-Alternatively, you can also cancel all your orders by side(buy/sell)
+Alternatively, you can also cancel all your orders by market and side(buy/sell)
 
 ```javascript
-acx.clearOrders({side:'buy'}).then(data => {
+acx.clearOrders({market: 'btcaud', side:'buy'}).then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
+
+Delete orders by ids
+
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
+| `ids`| String | required | A String of order Ids joined by ',' , for instance: 23,24,26 |
+
+```javascript
+acx.deleteOrders('23,24,26').then(data => {
+    console.log(data)
+}).catch(e => { console.error(e); });
+```
+
 
 #### Get order book by market
 

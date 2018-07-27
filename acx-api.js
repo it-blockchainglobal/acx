@@ -147,6 +147,9 @@ class ACX {
         this.restApiEndPoint = restApiEndPoint;
         this.socketEndPoint = socketEndPoint;
         this.ws = null;
+        if(socketEndPoint){
+            this.ws = new WebSocket(this.socketEndPoint);
+        }
         this.access_key = access_key;
         this.secret_key = secret_key;
     }
@@ -186,7 +189,7 @@ class ACX {
         params.signature = this.getSignature(verb, uri, params);
         return params;
     }
-    initWebSorket({ onTradeChanged, onOrderbookChanged } = {}) {
+    initWebSorket(onTradeChanged, onOrderbookChanged) {
         var self = this;
         self.ws = new WebSocket(self.socketEndPoint);
         self.ws.on('open', function open() {
@@ -200,6 +203,12 @@ class ACX {
                 }
             }
         });
+        if(onTradeChanged){
+            this.onTradeChanged(onTradeChanged);
+        }
+        if(onOrderbookChanged){
+            this.onOrderbookChanged(onOrderbookChanged);
+        }
     }
     onOrderbookChanged(markets = [], callback = null, limit = 50) {
         var self = this;
@@ -313,7 +322,7 @@ class ACX {
         return new Promise((resolve, reject) => {
             form.submit(this.restApiEndPoint + uri, (err, res) => {
                 if (err) { reject(err); }
-                else if(res.statusCode == 400){ reject( 'Place Multi-orders Failed. ' + res.statusCode + ' ' + res.statusMessage); }
+                else if(res.statusCode == 400){ reject( 'PLACEORDERS FAILED ' + res.statusCode + ' ' + res.statusMessage); }
                 else {
                     resolve(res.statusMessage);
                     res.resume();
@@ -463,7 +472,7 @@ class ACX {
                 let error = err.error.error;
                 if(err.statusCode){ error.statusCode = err.statusCode; }
                 if(err.name){ error.name = err.name; }
-                if(soure){ error.soure = source; }
+                if(source){ error.source = source; }
                 reject(error);
             });
         });
@@ -481,7 +490,7 @@ class ACX {
                 let error = err.error.error;
                 if(err.statusCode){ error.statusCode = err.statusCode; }
                 if(err.name){ error.name = err.name; }
-                if(soure){ error.soure = source; }
+                if(source){ error.source = source; }
                 reject(error);
             });
         });

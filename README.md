@@ -261,7 +261,19 @@ acx.deleteOrder(536791).then(data => {
 
 #### Bulk cancel orders
 
-Cancel all your orders
+Delete orders by ids
+
+| parameter | type   |required?|  description |
+| ---------| -------| ------|----------------------------------------------- |
+| `ids`| String | required | A String of order Ids joined by ',' , for instance: 23,24,26 |
+
+```javascript
+acx.deleteOrders('23,24,26').then(data => {
+    console.log(data)
+}).catch(e => { console.error(e); });
+```
+
+#### Clear orders
 
 | parameter | type   |required?|  description |
 | ---------| -------| ------|----------------------------------------------- |
@@ -278,26 +290,13 @@ acx.clearOrders().then(data => {
 }).catch(e => { console.error(e); });
 ```
 
-Alternatively, you can also cancel all your orders by market and side(buy/sell)
+Alternatively, you can also cancel your orders by market and side(buy/sell)
 
 ```javascript
 acx.clearOrders({market: 'btcaud', side:'buy'}).then(data => {
     console.log(data)
 }).catch(e => { console.error(e); });
 ```
-
-Delete orders by ids
-
-| parameter | type   |required?|  description |
-| ---------| -------| ------|----------------------------------------------- |
-| `ids`| String | required | A String of order Ids joined by ',' , for instance: 23,24,26 |
-
-```javascript
-acx.deleteOrders('23,24,26').then(data => {
-    console.log(data)
-}).catch(e => { console.error(e); });
-```
-
 
 #### Get order book by market
 

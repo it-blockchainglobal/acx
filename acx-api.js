@@ -387,7 +387,7 @@ class ACX {
     //         });
     //     });
     // }
-    deleteOrder(id = {}) {
+    deleteOrder(id = '') {
         let uri = '/api/v2/order/delete.json';
         let params = { id };
         if(id.hasOwnProperty('id')){

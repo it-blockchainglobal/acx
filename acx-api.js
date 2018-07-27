@@ -461,9 +461,9 @@ class ACX {
         return new Promise((resolve, reject) => {
             request(options).then(resolve).catch((err) => {
                 let error = err.error.error;
-                error.statusCode = err.statusCode;
-                error.name = err.name;
-                error.soure = source;
+                if(err.statusCode){ error.statusCode = err.statusCode; }
+                if(err.name){ error.name = err.name; }
+                if(soure){ error.soure = source; }
                 reject(error);
             });
         });
@@ -479,9 +479,9 @@ class ACX {
                 json: true
             }).then(resolve).catch((err) => {
                 let error = err.error.error;
-                error.statusCode = err.statusCode;
-                error.name = err.name;
-                error.soure = source;
+                if(err.statusCode){ error.statusCode = err.statusCode; }
+                if(err.name){ error.name = err.name; }
+                if(soure){ error.soure = source; }
                 reject(error);
             });
         });

@@ -11,6 +11,9 @@ This projectis designed to help you make your own projects that interact with th
 ACX is ambitious, awesome, advanced and Australian. Since 2013, we've taken the complexity out of trading and owning digital currencies for everyone in Australian and beyond. Our goal at ACX is to provide the highest quality, instant and simplified purchasing experience for customers looking to acquire Blockchain Backed assets, starting with Bitcoin.
 
 [Read Full Usage Guide On GitHub](https://it-blockchainglobal.github.io/acx/)
+## What's new ![npm](https://img.shields.io/npm/v/acx.svg)
+- New parameter "market" has been introduced in clearOrder request.
+- New function "deleteOrders" which allow user to cancel multiple orders.
 
 ## Getting started
 

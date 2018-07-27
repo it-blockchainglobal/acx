@@ -157,7 +157,11 @@ class ACX {
         var queryStr = ""
         if (verb && uri && query) {
             query.access_key = this.access_key;
-            queryStr = verb.toUpperCase() + '|' + uri + '|' + Object.keys(query).sort().reduce((a, k) => { a.push(k + '=' + encodeURIComponent(query[k])); return a }, []).join('&');
+            /**
+             * blocked by Sean on 20180725 remove url encode, please let me know if there is any issue without encode.
+             */
+            // queryStr = verb.toUpperCase() + '|' + uri + '|' + Object.keys(query).sort().reduce((a, k) => { a.push(k + '=' + encodeURIComponent(query[k])); return a }, []).join('&');
+            queryStr = verb.toUpperCase() + '|' + uri + '|' + Object.keys(query).sort().reduce((a, k) => { a.push(k + '=' + query[k]); return a }, []).join('&');
         }
         else {
             queryStr = verb;
@@ -201,7 +205,7 @@ class ACX {
         var self = this;
         let orderbooks = Array.from(markets, m => (new OrderBook(m.toLowerCase())));
         orderbooks.forEach(_orderbook => {
-            self.initOrderBook(_orderbook.market).then(data => { _orderbook.setData(data, limit); });
+            self.initOrderBook(_orderbook.market).then(data => { _orderbook.setData(data, limit); }).catch(err => { console.log(err); });
         })
         self.ws.on('message', data => {
             let rcvData = JSON.parse(data);
@@ -210,12 +214,9 @@ class ACX {
                     if (_orderbook.market.toLowerCase() == rcvData.orderbook.order.market.toLowerCase() && _orderbook.data) {
                         _orderbook.data = _orderbook.actionHandler(rcvData.orderbook, limit);
                         if (rcvData.orderbook.action && (rcvData.orderbook.action == 'remove')) {
-                            //if (!_orderbook.orderLengthValidation(limit)) {
-                                self.initOrderBook(_orderbook.market).then(data => {
-                                    _orderbook.setData(data, limit);
-                                });
-                            //}
-
+                            self.initOrderBook(_orderbook.market).then(data => {
+                                _orderbook.setData(data, limit);
+                            }).catch(err => { console.log(err); });
                         }
                     }
                 });
@@ -238,75 +239,57 @@ class ACX {
     getMyAccount() {
         let uri = '/api/v2/members/me.json';
         let params = {};
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getMyAccount');
-        });
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getMyAccount');
     }
     getMarketTrades({ market = this.market, order_by = 'desc', limit = 50, from = undefined, to = undefined, timestamp = undefined } = {}) {
-        let params = { market: market };
+        let params = { market };
         Object.assign(params, arguments[0]);
-        return new Promise((resolve, reject) => {
-            this.get('/api/v2/trades.json', params, resolve, 'getMarketTrades');
-        });
+        return this.get('/api/v2/trades.json', params, 'getMarketTrades');
     }
     getMyTrades({ market = this.market, order_by = 'desc', limit = 50, from = undefined, to = undefined, timestamp = undefined } = {}) {
         let uri = '/api/v2/trades/my.json';
-        let params = { market: market };
+        let params = { market };
         Object.assign(params, arguments[0]);
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getMyTrades');
-        });
-
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getMyTrades');
     }
     getOrders({ market = this.market, order_by = 'desc', state = undefined, limit = 100, page = 1 } = {}) {
         let uri = '/api/v2/orders.json';
-        let params = { market: market, order_by: order_by, state: state, limit: limit, page: page };
+        let params = { market, order_by, state, limit, page };
         Object.assign(params, arguments[0]);
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getOrders');
-        });
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getOrders');
     }
     getOrderById(id) {
-        if (!id || isNaN(id)) throw Error('getOrderById: Invalid order id');
         let uri = '/api/v2/order.json';
-        let params = { id: id };
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getOrderById');
-        });
+        let params = { id };
+        if(id.hasOwnProperty('id')){
+            params = id;
+        }
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getOrderById');
     }
     getDeposits({ currency = undefined, limit = undefined, state = undefined } = {}) {
         let uri = '/api/v2/deposits.json';
-        let params = { currency: currency, limit: limit, state: state };
+        let params = { currency, limit, state };
         Object.assign(params, arguments[0]);
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getDeposits');
-        });
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getDeposits');
     }
     getDeposit(txid) {
-        if (!txid) throw Error('getDeposit: Invalid deposit txid');
         let uri = '/api/v2/deposit.json';
-        let params = { txid: txid };
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getDeposit');
-        });
+        let params = { txid };
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getDeposit');
     }
     getDepositAddress(currency = 'aud') {
-        if (!currency) throw Error('getDepositAddress: Invalid currency');
         let uri = '/api/v2/deposit_address.json';
-        let params = { currency: currency };
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getDepositAddress');
-        });
+        let params = { currency };
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getDepositAddress');
     }
-    clearOrders({ side = undefined } = {}) {
+    clearOrders({ market = this.market, side = undefined } = {}) {
         let uri = '/api/v2/orders/clear.json';
-        let params = { side: side };
+        let params = { market, side };
         return new Promise((resolve, reject) => {
-            this.post(uri, this.getQueryParams('POST', uri, params), data => {
-                if (side) { console.log(side.toUpperCase() + " Orders cancelled"); }
-                else { console.log("All orders cancelled"); }
-                resolve(data);
-            }, 'clearOrders');
+            this.post(uri, this.getQueryParams('POST', uri, params), 'clearOrders').then(data => {
+                if (side) { resolve(side.toUpperCase() + " Orders cancelled"); }
+                else { resolve("All orders cancelled"); }
+            }).catch(reject);
         });
     }
     placeOrders(orders = []) {
@@ -329,9 +312,9 @@ class ACX {
         form.append('signature', this.getSignature('POST|' + uri + '|access_key=' + this.access_key + '&market=' + this.market + ordersStr + '&tonce=' + tonce));
         return new Promise((resolve, reject) => {
             form.submit(this.restApiEndPoint + uri, (err, res) => {
-                if (err) { console.log(err); reject(err); }
+                if (err) { reject(err); }
+                else if(res.statusCode == 400){ reject( 'Place Multi-orders Failed. ' + res.statusCode + ' ' + res.statusMessage); }
                 else {
-                    console.log(res.statusMessage)
                     resolve(res.statusMessage);
                     res.resume();
                 }
@@ -339,209 +322,172 @@ class ACX {
         });
     }
     placeOrder({ market = this.market, side = undefined, price = undefined, volume = undefined } = {}) {
-        if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
-        if (!volume) throw Error('updateOrderById: Invalid Order volume');
         let uri = '/api/v2/orders.json';
-        let params = { market: market, side: side, volume: volume };
-        if( !price ){
-            params.ord_type = 'market';
-        }else{
-            params.price = price;
-        }
-        return new Promise((resolve, reject) => {
-            this.post(uri, this.getQueryParams('POST', uri, params), data => {
-                console.log(params.side + " order " + data.id + " created on " + params.tonce);
-                resolve(data);
-            }, 'placeOrder');
-        });
+        let params = { market, side, volume };
+        if( !price ){ params.ord_type = 'market'; }
+        else{ params.price = price; }
+        return this.post(uri, this.getQueryParams('POST', uri, params), 'placeOrder');
     }
-    updateOrdersByPrice(side, price, volume, callback) {
-        if (!side) throw Error('updateOrderById: Invalid Order Side(buy/sell)');
-        if (!price) throw Error('updateOrderById: Invalid Order Price');
-        if (!volume) throw Error('updateOrderById: Invalid Order volume');
-
-        var self = this;
-        self.getOrdersByPrice(side, price, (orders) => {
-            var executed = 0;
-            var orderFound = false;
-            if (orders.filter((o) => { return Number(o.price) == Number(price) }).length == 0) {
-                self.placeOrder({ side: side, volume: volume, price: price }, (data) => {
-                    if (callback) { callback(data) }
-                });
-            }
-            else {
-                /* Go through all orders */
-                orders.forEach((order, idx) => {
-                    if (order.side.toLowerCase() == side.toLowerCase() && Number(order.price) == Number(price) && Number(order.volume) == Number(volume) && !orderFound) {
-                        /* keep the first order which match the update */
-                        executed++;
-                        orderFound = true;
-                    }
-                    else {
-                        /* delete all other others which donot match */
-                        self.deleteOrder(order.id, (data) => {
-                            executed++;
-                            if (!orderFound && !executed >= orders.length) {
-                                self.placeOrder({ side: side, volume: volume, price: price }, (data) => {
-                                    if (callback) { callback(data) }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }
-    updateOrderById({ market = this.market, id = undefined, side = undefined, price = undefined, volume = undefined } = {}) {
-        if (!id) throw Error('updateOrderById: Invalid Order ID');
-        let params = { market: market, id: id };
-        return new Promise((resolve, reject) => {
-            this.deleteOrder(id).then(data => {
-                if (!side) { side = data.side; }
-                if (!volume) { volume = data.volume; }
-                if (!price) { price = data.price; }
-                this.placeOrder({ market: market, side: side, price: price, volume: volume }).then(order => {
-                    resolve(order);
-                }).catch(e => { console.error(e); })
-            });
-        });
-    }
-    deleteOrder(id) {
-        if (!id || isNaN(id)) throw Error('deleteOrder: Invalid order id');
+    /**
+     * Abandoned by Sean 20180725
+     */
+    // updateOrdersByPrice(side, price, volume, callback) {
+    //     var self = this;
+    //     self.getOrdersByPrice(side, price, (orders) => {
+    //         var executed = 0;
+    //         var orderFound = false;
+    //         if (orders.filter((o) => { return Number(o.price) == Number(price) }).length == 0) {
+    //             self.placeOrder({ side: side, volume: volume, price: price }, (data) => {
+    //                 if (callback) { callback(data) }
+    //             });
+    //         }
+    //         else {
+    //             /* Go through all orders */
+    //             orders.forEach((order, idx) => {
+    //                 if (order.side.toLowerCase() == side.toLowerCase() && Number(order.price) == Number(price) && Number(order.volume) == Number(volume) && !orderFound) {
+    //                     /* keep the first order which match the update */
+    //                     executed++;
+    //                     orderFound = true;
+    //                 }
+    //                 else {
+    //                     /* delete all other others which donot match */
+    //                     self.deleteOrder(order.id, (data) => {
+    //                         executed++;
+    //                         if (!orderFound && !executed >= orders.length) {
+    //                             self.placeOrder({ side: side, volume: volume, price: price }, (data) => {
+    //                                 if (callback) { callback(data) }
+    //                             });
+    //                         }
+    //                     });
+    //                 }
+    //             });
+    //         }
+    //     });
+    // }
+    // updateOrderById({ market = this.market, id = undefined, side = undefined, price = undefined, volume = undefined } = {}) {
+    //     if (!id) throw Error('updateOrderById: Invalid Order ID');
+    //     let params = { market: market, id: id };
+    //     return new Promise((resolve, reject) => {
+    //         this.deleteOrder(id).then(data => {
+    //             if (!side) { side = data.side; }
+    //             if (!volume) { volume = data.volume; }
+    //             if (!price) { price = data.price; }
+    //             this.placeOrder({ market: market, side: side, price: price, volume: volume }).then(order => {
+    //                 resolve(order);
+    //             }).catch(e => { console.error(e); })
+    //         });
+    //     });
+    // }
+    deleteOrder(id = {}) {
         let uri = '/api/v2/order/delete.json';
-        let params = { id: id };
-        return new Promise((resolve, reject) => {
-            this.post(uri, this.getQueryParams('POST', uri, params), data => {
-                console.log("Order " + data.id + " cancelled ");
-                resolve(data);
-            }, 'deleteOrder');
-        });
+        let params = { id };
+        if(id.hasOwnProperty('id')){
+            params = id;
+        }
+        return this.post(uri, this.getQueryParams('POST', uri, params), 'deleteOrder');
+    }
+    deleteOrders(ids = []) {
+        let uri = '/api/v2/orders/delete.json';
+        let params = { ids };
+        return this.post(uri, this.getQueryParams('POST', uri, params), 'deleteOrders');
     }
     getMarkets() {
-        return new Promise((resolve, reject) => {
-            this.get('/api/v2/markets.json', null, resolve, 'getMarkets');
-        });
+        return this.get('/api/v2/markets.json', null, 'getMarkets');
     }
     getTickers() {
-        return new Promise((resolve, reject) => {
-            this.get('/api/v2/tickers.json', null, resolve, 'getTickers');
-        });
+        return this.get('/api/v2/tickers.json', null, 'getTickers');
     }
     getOrderBook({ market = this.market, ask_limit = 20, bids_limit = 20 } = {}) {
-        let params = { market: market, ask_limit: ask_limit, bids_limit: bids_limit };
-        return new Promise((resolve, reject) => {
-            this.get('/api/v2/order_book.json', params, resolve, 'getOrderBook');
-        });
+        let params = { market, ask_limit, bids_limit };
+        return this.get('/api/v2/order_book.json', params, 'getOrderBook');
     }
     getDepth({ market = this.market, limit = 300 } = {}) {
         if (limit <= 0) { limit = 1; }
-        let params = { market: market.toLowerCase(), limit: limit };
-        return new Promise((resolve, reject) => {
-            this.get('/api/v2/depth.json', params, (data) => {
-                //let depth = { timestampe: data.timestamp, asks: [], bids: [] };
-                let depth = { asks: [], bids: [] };
+        let params = { market: market.toLowerCase(), limit };
+        return this.get('/api/v2/depth.json', params, 'getDepth').then(data => {
                 function calcSide(side) {
-                    let tempSide = [];
                     if (limit > 1) {
-                        side.forEach(d => {
+                        let tempSide = [];
+                        for(let d of side){
                             tempSide.push({ price: Number(d[0]), volume: Number(d[1]) });
-                        });
+                        }
+                        return tempSide;
                     }
-                    else {
-                        tempSide = { price: Number(side[0][0]), volume: Number(side[0][1]) }
-                    }
-                    return tempSide;
+                    return { price: Number(side[0][0]), volume: Number(side[0][1]) }
                 }
-                depth.asks = calcSide(data.asks);
-                depth.bids = calcSide(data.bids);
-                resolve(depth);
-            }, 'getDepth');
-        });
+                resolve({
+                    asks: calcSide(data.asks),
+                    bids: calcSide(data.bids)
+                });
+            }).catch(reject);
     }
     getKLine({ market = this.market, limit = 30, period = 1, timestamp = undefined } = {}) {
-        let params = { market: market, limit: limit };
+        let params = { market, limit };
         if (period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p => { return p == period }).length == 0) { throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
         Object.assign(params, arguments[0]);
-        return new Promise((resolve, reject) => {
-            this.get('/api/v2/k.json', params, resolve, 'getKLine');
-        });
+        return this.get('/api/v2/k.json', params, 'getKLine');
     }
     getKLineWithPendingTrades({ market = this.market, trade_id = undefined, limit = 30, period = 1, timestamp = undefined } = {}) {
-        if (!trade_id || isNaN(trade_id)) throw Error('getKLineWithPendingTrades: Invalid trade id');
-        let params = { market: market, limit: limit };
+        let params = { market, limit };
         if (period && [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080].filter(p => { return p == period }).length == 0) { throw Error('getKLine: period. [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 4320, 10080]') }
         Object.assign(params, arguments[0]);
-        return new Promise((resolve, reject) => {
-            this.get('/api/v2/k_with_pending_trades.json', params, resolve, 'getKLineWithPendingTrades');
-        });
+        return this.get('/api/v2/k_with_pending_trades.json', params, 'getKLineWithPendingTrades');
     }
     getServerTimestamp() {
-        return new Promise((resolve, reject) => {
-            this.get('/api/v2/timestamp.json', null, resolve, 'getServerTimestamp');
-        });
+        return this.get('/api/v2/timestamp.json', null, 'getServerTimestamp');
     }
     getWithdraws({ currency = undefined, limit = undefined, state = undefined } = {}) {
         let uri = '/api/v2/withdraws.json';
-        let params = { currency: currency, limit: limit, state: state };
+        let params = { currency, limit, state };
         Object.assign(params, arguments[0]);
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getWithdraws');
-        });
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getWithdraws');
     }
     getWithdrawById(id) {
-        if (!id || isNaN(id)) throw Error('getWithdrawById: Invalid withdraw id');
         let uri = '/api/v2/withdraw.json';
-        let params = { id: id };
-        return new Promise((resolve, reject) => {
-            this.get(uri, this.getQueryParams('GET', uri, params), resolve, 'getWithdrawById');
-        });
+        let params = { id };
+        return this.get(uri, this.getQueryParams('GET', uri, params), 'getWithdrawById');
     }
     createWithdraw({ currency = 'btc', sum = undefined, address = undefined, fee = undefined } = {}) {
-        if (!sum || isNaN(sum)) throw Error('createWithdraw: Invalid sum amount for withdrawal.');
-        if (!address) throw Error('createWithdraw: Invalid Crypto-currency address.');
         let uri = '/api/v2/withdraw.json';
-        let params = { currency: currency, sum: sum, address: address, fee: fee };
-
-        return new Promise((resolve, reject) => {
-            this.post(uri, this.getQueryParams('POST', uri, params), data => {
-                console.log('Withdraw ' + data.id + ' created on ' + params.tonce);
-                resolve(data);
-            }, 'createWithdraw');
-        })
+        let params = { currency, sum, address, fee };
+        return this.post(uri, this.getQueryParams('POST', uri, params), 'createWithdraw');
     }
-    get(uri, query, callback, source) {
+    get(uri, query, source) {
         let options = { uri: this.restApiEndPoint + uri, json: true };
         if (query) {
             options.qs = query;
             options.qs.access_key = this.access_key;
         }
-        request(options).then((resp) => {
-            if (callback) { callback(resp); }
-        }).catch((err) => {
-            console.log(source + " Error: " + err.message);
-        });
-    }
-    post(uri, query, callback, source) {
-        query.access_key = this.access_key
-        request({
-            method: 'POST',
-            uri: this.restApiEndPoint + uri,
-            formData: query,
-            json: true
-        }).then((resp) => {
-            if (callback) { callback(resp); }
-        }).catch((err) => {
-            console.log(source + " Error: " + err.message);
-        });
-    }
-    initOrderBook(market = this.market) {
         return new Promise((resolve, reject) => {
-            this.getOrderBook({ market: market, ask_limit: 50, bids_limit: 50 }).then(data => {
-                resolve(data);
-            }).catch(error => {
+            request(options).then(resolve).catch((err) => {
+                let error = err.error.error;
+                error.statusCode = err.statusCode;
+                error.name = err.name;
+                error.soure = source;
                 reject(error);
             });
         });
+        
+    }
+    post(uri, query, source) {
+        query.access_key = this.access_key;
+        return new Promise((resolve, reject) => {
+            request({
+                method: 'POST',
+                uri: this.restApiEndPoint + uri,
+                formData: query,
+                json: true
+            }).then(resolve).catch((err) => {
+                let error = err.error.error;
+                error.statusCode = err.statusCode;
+                error.name = err.name;
+                error.soure = source;
+                reject(error);
+            });
+        });
+    }
+    initOrderBook(market = this.market) {
+        return this.getOrderBook({ market: market, ask_limit: 50, bids_limit: 50 });
     }
 }
 

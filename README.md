@@ -6,7 +6,7 @@
 [![npm](https://img.shields.io/npm/v/acx.svg)](https://www.npmjs.com/package/acx)
 [![npm](https://img.shields.io/npm/l/acx.svg)](https://www.npmjs.com/package/acx)
 
-This projectis designed to help you make your own projects that interact with the [ACX Exchange](https://help.acx.io/api).
+This projectis designed to help you make your own projects that interact with the [ACX Exchange](https://acx.io).
 
 ACX is ambitious, awesome, advanced and Australian. Since 2013, we've taken the complexity out of trading and owning digital currencies for everyone in Australian and beyond. Our goal at ACX is to provide the highest quality, instant and simplified purchasing experience for customers looking to acquire Blockchain Backed assets, starting with Bitcoin.
 
@@ -26,7 +26,7 @@ npm install acx --save
 ### Prerequisites
 
 To get started, you need to request for access/secret key at first.
-Please visit [ACX API Reference](https://help.acx.io/api) for more information.
+Please visit [ACX API Reference](https://acx.io/documents/api_v2) for more information.
 
 ## REST API Usage
 

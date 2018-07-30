@@ -413,7 +413,8 @@ class ACX {
     getDepth({ market = this.market, limit = 300 } = {}) {
         if (limit <= 0) { limit = 1; }
         let params = { market: market.toLowerCase(), limit };
-        return this.get('/api/v2/depth.json', params, 'getDepth').then(data => {
+        return new Promise( (resolve,reject)=>{
+            this.get('/api/v2/depth.json', params, 'getDepth').then(data => {
                 function calcSide(side) {
                     if (limit > 1) {
                         let tempSide = [];
@@ -429,6 +430,8 @@ class ACX {
                     bids: calcSide(data.bids)
                 });
             }).catch(reject);
+        } );
+
     }
     getKLine({ market = this.market, limit = 30, period = 1, timestamp = undefined } = {}) {
         let params = { market, limit };

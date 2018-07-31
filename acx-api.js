@@ -472,10 +472,15 @@ class ACX {
         }
         return new Promise((resolve, reject) => {
             request(options).then(resolve).catch((err) => {
-                let error = err.error.error;
-                if(err.statusCode){ error.statusCode = err.statusCode; }
-                if(err.name){ error.name = err.name; }
-                if(source){ error.source = source; }
+                let error = err.error;
+                if(err.error.error){
+                    error = err.error.error;
+                }
+                if(error){
+                    if(err.statusCode){ error.statusCode = err.statusCode; }
+                    if(err.name){ error.name = err.name; }
+                    if(source){ error.source = source; }
+                }
                 reject(error);
             });
         });
@@ -490,10 +495,15 @@ class ACX {
                 formData: query,
                 json: true
             }).then(resolve).catch((err) => {
-                let error = err.error.error;
-                if(err.statusCode){ error.statusCode = err.statusCode; }
-                if(err.name){ error.name = err.name; }
-                if(source){ error.source = source; }
+                let error = err.error;
+                if(err.error.error){
+                    error = err.error.error;
+                }
+                if(error){
+                    if(err.statusCode){ error.statusCode = err.statusCode; }
+                    if(err.name){ error.name = err.name; }
+                    if(source){ error.source = source; }
+                }
                 reject(error);
             });
         });

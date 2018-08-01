@@ -476,7 +476,7 @@ class ACX {
                 if(err.error.error){
                     error = err.error.error;
                 }
-                if(error){
+                if(error && typeof error != 'string'){
                     if(err.statusCode){ error.statusCode = err.statusCode; }
                     if(err.name){ error.name = err.name; }
                     if(source){ error.source = source; }
@@ -499,7 +499,7 @@ class ACX {
                 if(err.error.error){
                     error = err.error.error;
                 }
-                if(error){
+                if(error && typeof error != 'string'){
                     if(err.statusCode){ error.statusCode = err.statusCode; }
                     if(err.name){ error.name = err.name; }
                     if(source){ error.source = source; }

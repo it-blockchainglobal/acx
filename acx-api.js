@@ -431,8 +431,8 @@ class ACX {
     getTickers() {
         return this.get('/api/v2/tickers.json', null, 'getTickers');
     }
-    getOrderBook({ market = this.market, ask_limit = 20, bids_limit = 20 } = {}) {
-        let params = { market, ask_limit, bids_limit };
+    getOrderBook({ market = this.market, asks_limit = 20, bids_limit = 20 } = {}) {
+        let params = { market, asks_limit, bids_limit };
         return this.get('/api/v2/order_book.json', params, 'getOrderBook');
     }
     getDepth({ market = this.market, limit = 300 } = {}) {

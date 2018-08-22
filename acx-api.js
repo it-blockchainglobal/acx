@@ -39,12 +39,12 @@ class OrderBook {
     }
     sortOrders(side = null) {
         if(!side || side.toLowerCase() == "both" || side.toLowerCase() == "ask"){
-            this.data.bids = this.data.bids.sort(function (order1, order2) {
+            this.data.bids = this.data.bids.sort((order1, order2) => {
                 return Number(order2.price) - Number(order1.price);
             });
         }
         if(!side || side.toLowerCase() == "both" || side.toLowerCase() == "bid"){
-            this.data.asks = this.data.asks.sort(function (order1, order2) {
+            this.data.asks = this.data.asks.sort((order1, order2) => {
                 return Number(order1.price) - Number(order2.price);
             });
         }
@@ -152,6 +152,8 @@ class ACX {
         }
         this.access_key = access_key;
         this.secret_key = secret_key;
+        this._onTradeChanged = null;
+        this._onOrderbookChanged = null;
     }
     setTradeFee(tradeFee = 0.002) {
         this.tradeFee = Number(tradeFee);
@@ -191,11 +193,17 @@ class ACX {
     }
     initWebSorket(onTradeChanged, onOrderbookChanged) {
         var self = this;
+        // self.ws = new WebSocket(self.socketEndPoint);
+        self.connectWebSocket(onTradeChanged, onOrderbookChanged);
+    }
+    connectWebSocket(onTradeChanged = this._onOrderbookChanged, onOrderbookChanged = this._onOrderbookChanged){
+        let self = this;
+        console.log('ACX WebSocket connecting...');
         self.ws = new WebSocket(self.socketEndPoint);
-        self.ws.on('open', function open() {
-            console.log('acx socket connected');
+        self.ws.on('open', () => {
+            console.log('ACX WebSocket connected.');
         });
-        self.ws.on('message', function incoming(data) {
+        self.ws.on('message', data => {
             let rcvData = JSON.parse(data);
             if (rcvData) {
                 if (rcvData.challenge) {
@@ -203,15 +211,25 @@ class ACX {
                 }
             }
         });
-        if(onTradeChanged){
+        self.ws.on('error', err => {
+            console.error(err);
+        });
+        self.ws.on('close', () => {
+            console.log('ACX WebSocket disconnected.');
+            self.connectWebSocket();
+        });
+        if(onTradeChanged || self._onTradeChanged){
             this.onTradeChanged(onTradeChanged);
         }
-        if(onOrderbookChanged){
+        if(onOrderbookChanged || self._onOrderbookChanged){
             this.onOrderbookChanged(onOrderbookChanged);
         }
     }
     onOrderbookChanged(markets = [], callback = null, limit = 50) {
         var self = this;
+        if(callback){
+            self._onOrderbookChanged = callback;
+        }
         let orderbooks = Array.from(markets, m => (new OrderBook(m.toLowerCase())));
         orderbooks.forEach(_orderbook => {
             self.initOrderBook(_orderbook.market).then(data => { _orderbook.setData(data, limit); }).catch(err => { console.log(err); });
@@ -230,18 +248,21 @@ class ACX {
                     }
                 });
                 let result = orderbooks.filter( ob => {return ob.data} );
-                if (callback && result.length >0 ) { 
-                    callback(result); 
+                if (self._onOrderbookChanged && result.length >0 ) { 
+                    self._onOrderbookChanged (result); 
                 }
             }
         });
     }
     onTradeChanged(callback = null) {
         var self = this;
+        if(callback){
+            self._onTradeChanged = callback;
+        }
         self.ws.on('message', data => {
             let rcvData = JSON.parse(data);
             if (rcvData && rcvData.trade) {
-                if (callback) { callback(rcvData.trade); }
+                if (self._onTradeChanged) { self._onTradeChanged(rcvData.trade); }
             }
         });
     }
@@ -302,27 +323,31 @@ class ACX {
         });
     }
     placeOrders(orders = []) {
-        var form = new FormData();
-        var tonce = (new Date).getTime();
-        var uri = '/api/v2/orders/multi';
-        form.append('access_key', this.access_key);
-        form.append('market', this.market);
-        form.append('tonce', tonce);
-        var ordersStr = "";
-
-        orders.forEach((order, idx) => {
-            ordersStr += "&orders[][price]=" + order.price;
-            ordersStr += "&orders[][side]=" + order.side;
-            ordersStr += "&orders[][volume]=" + order.volume;
-            form.append('orders[][price]', order.price);
-            form.append('orders[][side]', order.side);
-            form.append('orders[][volume]', order.volume);
-        });
-        form.append('signature', this.getSignature('POST|' + uri + '|access_key=' + this.access_key + '&market=' + this.market + ordersStr + '&tonce=' + tonce));
         return new Promise((resolve, reject) => {
+            var form = new FormData();
+            var tonce = (new Date).getTime();
+            var uri = '/api/v2/orders/multi';
+            form.append('access_key', this.access_key);
+            form.append('market', this.market);
+            form.append('tonce', tonce);
+            var ordersStr = "";
+
+            orders.forEach((order, idx) => {
+                ordersStr += "&orders[][price]=" + order.price;
+                ordersStr += "&orders[][side]=" + order.side;
+                ordersStr += "&orders[][volume]=" + order.volume;
+                form.append('orders[][price]', order.price);
+                form.append('orders[][side]', order.side);
+                form.append('orders[][volume]', order.volume);
+            });
+            form.append('signature', this.getSignature('POST|' + uri + '|access_key=' + this.access_key + '&market=' + this.market + ordersStr + '&tonce=' + tonce));
             form.submit(this.restApiEndPoint + uri, (err, res) => {
-                if (err) { reject(err); }
-                else if(res.statusCode == 400){ reject( 'PLACEORDERS FAILED ' + res.statusCode + ' ' + res.statusMessage); }
+                if (err) { 
+                    reject(err); 
+                }
+                else if(res.statusCode == 400){ 
+                    reject( this.market + 'PLACEORDERS FAILED ' + res.statusCode + ' ' + res.statusMessage); 
+                }
                 else {
                     resolve(res.statusMessage);
                     res.resume();
